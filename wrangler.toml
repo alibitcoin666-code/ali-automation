@@ -1,0 +1,7 @@
+name = "ali-automation"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# هر روز ساعت ۰۶:۰۰ UTC یک بار اجرا می‌شود (می‌توانی بعداً عوض کنی)
+[triggers]
+crons = ["0 6 * * *"]
