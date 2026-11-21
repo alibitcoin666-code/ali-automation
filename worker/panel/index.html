@@ -4,7 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Cpath d=%22M16 2 30 16 16 30 2 16z%22 fill=%22%23c9a25a%22/%3E%3C/svg%3E" />
     <title>کارخانه‌ی موشن علی — پنل</title>
+    <script>
+      // Sandboxed frames can throw on Web Storage access; give the player an in-memory fallback.
+      (function () {
+        try { var k = "__amf"; window.localStorage.setItem(k, "1"); window.localStorage.removeItem(k); return; } catch (e) {}
+        var m = {};
+        var mem = { getItem: function (k) { return Object.prototype.hasOwnProperty.call(m, k) ? m[k] : null; }, setItem: function (k, v) { m[k] = String(v); }, removeItem: function (k) { delete m[k]; }, clear: function () { m = {}; }, key: function (i) { return Object.keys(m)[i] || null; }, get length() { return Object.keys(m).length; } };
+        try { Object.defineProperty(window, "localStorage", { value: mem, configurable: true }); } catch (e) {}
+      })();
+    </script>
     <script>
       // Remotion staticFile() base: fonts are served next to this page (works under any sub-path).
       window.remotion_staticBase = new URL(".", location.href).pathname.replace(/\/$/, "");

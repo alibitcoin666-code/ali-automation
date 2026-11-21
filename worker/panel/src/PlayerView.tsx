@@ -3,6 +3,7 @@ import { Player } from "@remotion/player";
 import { MotionVideo } from "../../../engine/src/compositions/Video";
 import { gated } from "../../../engine/src/lib/FontGate";
 import type { RenderPlan } from "@amf/pipeline/core";
+import { DEMO } from "./data";
 
 const GVideo = gated(MotionVideo);
 
@@ -23,6 +24,7 @@ export default function PlayerView({ plan, audio }: { plan: RenderPlan; audio?: 
         compositionWidth={p.width}
         compositionHeight={p.height}
         controls
+        allowFullscreen={!DEMO}
         acknowledgeRemotionLicense
         style={{ width: "100%", aspectRatio: `${p.width} / ${p.height}`, borderRadius: 10, overflow: "hidden", background: "#000" }}
         errorFallback={({ error }) => <div className="player-error">خطای پیش‌نمایش: {error.message}</div>}
