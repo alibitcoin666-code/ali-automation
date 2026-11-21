@@ -113,8 +113,6 @@ const Page: React.FC<{ page: Caption; startFrame: number; theme: BrandTheme; for
                     whiteSpace: "pre",
                     color: active ? p.captionHighlight : p.captionText,
                     opacity: spoken || active || activeIdx < 0 ? 1 : 0.94,
-                    transform: active ? "scale(1.06)" : undefined,
-                    transformOrigin: "50% 60%",
                   }}
                 >
                   {w}

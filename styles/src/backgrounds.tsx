@@ -292,7 +292,8 @@ const SwissGrid: React.FC<BgProps> = ({ theme }) => {
         <div key={i} style={{ position: "absolute", left: (i * width) / cols, top: 0, bottom: 0, width: 1, background: hexA(p.text, 0.06) }} />
       ))}
       <div style={{ position: "absolute", left: 0, right: 0, top: height * 0.62, height: 1, background: hexA(p.text, 0.08) }} />
-      <div style={{ position: "absolute", right: width / cols, top: height * 0.1, width: width / cols / 3, height: height * 0.8, background: p.accent }} />
+      {/* accent rule lives in the outer margin, outside title-safe, so it never touches typography */}
+      <div style={{ position: "absolute", right: Math.round(width * 0.045), top: height * 0.1, width: Math.max(8, Math.round(width * 0.006)), height: height * 0.8, background: p.accent }} />
     </AbsoluteFill>
   );
 };

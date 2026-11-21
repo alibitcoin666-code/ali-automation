@@ -297,6 +297,7 @@ export async function runQa(job: JobDir, plan: RenderPlan, file: string, probeLo
 
   const asr = await whisperCheck(job, plan, job.p("audio", "voice.wav"));
   checks.whisper = asr;
+  if (asr && "skipped" in asr) warnings.push(`Whisper check skipped: ${asr.skipped}`);
   const wer = asr && "wer" in asr ? (asr.wer ?? 0) : 0;
   if (wer > QA_LIMITS.werMax) failures.push(`Whisper WER ${wer} > ${QA_LIMITS.werMax} (pronunciation problem?)`);
   else if (wer > 0.12) warnings.push(`Whisper WER ${wer}`);
