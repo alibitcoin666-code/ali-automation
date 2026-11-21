@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { interpolate, random, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { getRemotionEnvironment, interpolate, random, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { measureText } from "@remotion/layout-utils";
 import { UNITS, type MotionStyle } from "@amf/pipeline/core";
 import { bez, clamp } from "./util";
@@ -69,7 +69,7 @@ export function layoutText(opts: {
 }): LaidOutText {
   const words = mergeLatinRuns(glueUnits(opts.text.split(/\s+/).filter(Boolean)), isRtlText(opts.text));
   const measure = (s: string, size: number) =>
-    measureText({ text: s, fontFamily: opts.fontFamily, fontSize: size, fontWeight: String(opts.fontWeight), letterSpacing: "0px", validateFontIsLoaded: true }).width;
+    measureText({ text: s, fontFamily: opts.fontFamily, fontSize: size, fontWeight: String(opts.fontWeight), letterSpacing: "0px", validateFontIsLoaded: !getRemotionEnvironment().isPlayer }).width;
   for (let size = opts.maxSize; size >= opts.minSize; size -= 2) {
     const space = measure(" ", size);
     const widths = words.map((w) => measure(w, size));
@@ -247,6 +247,8 @@ export const KineticText: React.FC<KineticTextProps> = (p) => {
                   const bump = frame >= pf ? interpolate(punch, [0, 0.5, 1], [0, 1, 0], clamp) * 0.12 : 0;
                   ws.opacity = interpolate(s, [0, 0.3], [0, 1], clamp);
                   ws.transform = `scale(${base + bump})`;
+                  // grow away from the reading-start edge so the zone edge (and title-safe) is never crossed
+                  ws.transformOrigin = rtl ? "100% 60%" : "0% 60%";
                   if (frame >= pf && isEmph) ws.color = p.accent;
                   break;
                 }
@@ -258,6 +260,7 @@ export const KineticText: React.FC<KineticTextProps> = (p) => {
                   ws.opacity = t;
                   ws.filter = `blur(${(1 - t) * 14}px)`;
                   ws.transform = `scale(${1.06 - 0.06 * t})`;
+                  ws.transformOrigin = rtl ? "100% 50%" : "0% 50%";
                   break;
                 case "echo": {
                   ws.opacity = interpolate(s, [0, 0.3], [0, 1], clamp);

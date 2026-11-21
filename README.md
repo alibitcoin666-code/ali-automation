@@ -5,10 +5,10 @@ A free pipeline that turns a short Persian request into a YouTube-ready motion-g
 separate on-screen typography and per-channel branded templates.
 
 ```
-Telegram bot / web panel (Cloudflare Worker + D1 + R2)
-   └─ workflow_dispatch → GitHub Actions (public repo, free runners)
-        guard → script (Gemini + zod) → voice (Gemini TTS → edge-tts) → CTC align (wav2vec2)
-        → assets (flux-1-schnell, no text) → mix (−14 LUFS) → Remotion render → QA gate → deliver (R2 / Drive)
+Telegram bot / web panel (Cloudflare Worker + SQLite Durable Object + Workers AI binding)
+   └─ render queue ← dispatcher.yml (GITHUB_TOKEN) → render.yml on GitHub Actions (public repo, free runners)
+        guard → script (Gemini + zod; Workers AI fallback) → voice (Gemini TTS → edge-tts) → CTC align (wav2vec2)
+        → assets (flux-1-schnell, no text) → mix (−14 LUFS) → Remotion render → QA gate → deliver (GitHub Release assets via signed Worker links / Drive)
 ```
 
 | Folder | Purpose |

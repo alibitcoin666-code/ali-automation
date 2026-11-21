@@ -1,7 +1,7 @@
 import { Api, InlineKeyboard } from "grammy";
 import { JobRequest } from "@amf/pipeline/core";
 import type { Env } from "./env";
-import { enabled } from "./env";
+import { enabled, ownerId } from "./env";
 import { createJob, getJob, newJobId, setStatus, todayCount, event, type JobRow } from "./db";
 import { dispatch } from "./github";
 import { signMedia } from "./crypto";
@@ -33,7 +33,12 @@ export function guardRequest(env: Env, raw: unknown): { ok: true; req: JobReques
   return { ok: true, req };
 }
 
-export const api = (env: Env) => new Api(env.BOT_TOKEN);
+/** Telegram client; a no-op stand-in when the bot is not configured (panel / e2e still work). */
+export const api = (env: Env): Pick<Api, "sendMessage" | "sendPhoto" | "sendVideo"> => {
+  if (env.BOT_TOKEN && ownerId(env) > 0) return new Api(env.BOT_TOKEN);
+  const skip = async () => (console.log("telegram not configured — message skipped"), undefined as never);
+  return { sendMessage: skip, sendPhoto: skip, sendVideo: skip };
+};
 
 export const reviewKeyboard = (id: string, stage: "s" | "p") =>
   new InlineKeyboard().text(T.btnApprove, `a:${stage}:${id}`).text(T.btnEdit, `e:${stage}:${id}`).text(T.btnReject, `r:${stage}:${id}`);

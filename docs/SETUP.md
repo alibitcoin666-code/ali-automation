@@ -1,60 +1,47 @@
 # راه‌اندازی کارخانه‌ی موشن علی
 
-این راهنما همه‌ی مراحل نصب را از صفر توضیح می‌دهد. هیچ کلیدی را در چت، کد یا کامیت نگذارید؛ کلیدها فقط در **GitHub Secrets** و **Cloudflare secrets** ذخیره می‌شوند.
+این راهنما با کلیدهایی کار می‌کند که از قبل در مخزن `alibitcoin666-code/ali-automation` هستند. هیچ کلیدی را در چت، کد یا کامیت نگذارید؛ کلیدها فقط در **GitHub Secrets** و **Cloudflare secrets** نگه داشته می‌شوند.
 
-## ۱. پیش‌نیازها
-- Node.js ۲۲ و pnpm ۹ (`corepack enable`)
-- حساب GitHub (مخزن عمومی؛ دقیقه‌های Actions برای مخزن عمومی رایگان است)
-- حساب Cloudflare (پلن رایگان Workers، D1، R2، Workers AI)
-- کلید Gemini API از Google AI Studio
-- یک ربات تلگرام از @BotFather
+## معماری (بدون D1 و R2)
+- **Worker** با نام `ali-motion-factory` (ربات تلگرام + پنل وب + API) روی `https://ali-motion-factory.ali-bitcoin666.workers.dev`.
+- **ذخیره‌سازی**: یک Durable Object با SQLite که روی پلن رایگان Workers در دسترس است: ۵ GB برای کل حساب و حداکثر ۸ MB برای هر BLOB ([محدودیت‌های Durable Objects](https://developers.cloudflare.com/durable-objects/platform/limits/)). این‌ها در آن نگه داشته می‌شوند: کارها، رویدادها، نشست‌ها، صف رندر و فایل‌های کوچک JSON.
+- **رسانه‌ها** (MP4، M4A، تامبنیل بزرگ): به‌صورت Asset در یک Release پیش‌انتشار با تگ `job-<id>` در همین مخزن ذخیره می‌شوند. Worker آن‌ها را با پشتیبانی Range از طریق لینک امضاشده‌ی `/m/...` پخش می‌کند.
+- **تصاویر flux و مدل متنی پشتیبان**: از طریق binding هوش مصنوعی خود Worker اجرا می‌شوند، پس Actions به توکن Workers AI نیازی ندارد.
+- **شروع رندر**: Worker توکن GitHub ندارد. گردش‌کار `dispatcher.yml` هر ۵ دقیقه اجرا می‌شود و حدود ۴٫۵ دقیقه صف را بررسی می‌کند. هر مرحله‌ای را که در صف ببیند، با `GITHUB_TOKEN` همان اجرا در `render.yml` شروع می‌کند.
 
-## ۲. نصب محلی
+## اسرار لازم (Settings → Secrets and variables → Actions)
+| نام | وضعیت | کاربرد |
+|---|---|---|
+| `CLOUDFLARE_API_TOKEN` | موجود | استقرار Worker. فقط دسترسی Workers Scripts: Edit لازم است |
+| `CLOUDFLARE_ACCOUNT_ID` | موجود | شناسه‌ی حساب |
+| `CALLBACK_SECRET` | ساخته شد (تصادفی) | امضای HMAC بین Actions و Worker. `SESSION_SECRET` و `TG_WEBHOOK_SECRET` از همین ساخته می‌شوند |
+| `TELEGRAM_BOT_TOKEN` | **باید اضافه شود** | فعال شدن ربات. استقرار بعدی وب‌هوک و فهرست دستورها را خودکار تنظیم می‌کند |
+| `TELEGRAM_OWNER_ID` | اختیاری | اگر خالی بماند، اولین `/start` خصوصی مالک ثبت می‌شود (فقط یک بار) |
+| `GEMINI_API_KEY` | اختیاری | متن با Gemini و صدای Gemini TTS. بدون آن، متن با gpt-oss-120b روی Workers AI و صدا با edge-tts ساخته می‌شود |
+| `GDRIVE_CLIENT_ID` / `GDRIVE_CLIENT_SECRET` / `GDRIVE_REFRESH_TOKEN` / `GDRIVE_FOLDER_ID` | اختیاری | کپی نسخه‌ی نهایی در Google Drive |
+
+## استقرار
+با هر push به `main` که پوشه‌ی `worker/` یا بخش‌های مشترک را تغییر دهد، گردش‌کار `deploy.yml` اجرا می‌شود. می‌توانید آن را از تب Actions و با دکمه‌ی **Run workflow** هم اجرا کنید. این مراحل را انجام می‌دهد:
+1. تست و typecheck
+2. ساخت پنل
+3. `wrangler deploy`
+4. تنظیم اسرار Worker
+5. وب‌هوک تلگرام (اگر توکن ربات باشد)
+6. آزمون سلامت `/health`
+
+## آزمون کامل ابری
+در تب Actions، گردش‌کار **e2e** را با **Run workflow** اجرا کنید. این آزمون یک کار واقعی را از همان مسیر ربات می‌سازد: guard، سقف روزانه و صف. سپس متن و پیش‌نمایش را خودکار تأیید می‌کند و منتظر نسخه‌ی نهایی و نتیجه‌ی QA می‌ماند. فایل‌ها در Release با تگ `job-<id>` قرار می‌گیرند.
+
+## نصب محلی
 ```bash
 pnpm install
 bash scripts/install-fonts.sh        # بررسی sha256 فونت‌های OFL و نصب TTF
 pnpm --filter @amf/pipeline test     # تست‌های متن فارسی، زیرنویس و همگام‌سازی
+pnpm --filter @amf/worker test       # تست‌های Worker و Durable Object
 ```
-
-## ۳. منابع Cloudflare
-```bash
-cd worker
-npx wrangler d1 create amf                     # شناسه را در wrangler.jsonc → database_id بگذارید
-npx wrangler d1 migrations apply amf --remote
-npx wrangler r2 bucket create amf-media
-```
-مقدارهای `vars` در `wrangler.jsonc`:
-| متغیر | توضیح |
-|---|---|
-| `OWNER_ID` | شناسه‌ی عددی تلگرام شما (فقط همین کاربر به ربات دسترسی دارد) |
-| `GITHUB_REPO` | مثلاً `username/ali-motion-factory` |
-| `PUBLIC_URL` | آدرس Worker، مثلاً `https://ali-motion-factory.<subdomain>.workers.dev` |
-| `DAILY_CAP` | سقف ویدیوی روزانه (پیش‌فرض ۶) |
-| `FACTORY_ENABLED` | کلید خاموش/روشن کل کارخانه |
-
-اسرار Worker (هر کدام با `npx wrangler secret put NAME`):
-`BOT_TOKEN`، `TG_WEBHOOK_SECRET` (رشته‌ی تصادفی)، `GITHUB_TOKEN` (توکن fine-grained فقط با دسترسی Actions: write روی همین مخزن)، `CALLBACK_SECRET` (رشته‌ی تصادفی مشترک با Actions)، `SESSION_SECRET` (رشته‌ی تصادفی).
-
-## ۴. اسرار GitHub Actions
-Settings → Secrets and variables → Actions:
-`GEMINI_API_KEY`، `CF_ACCOUNT_ID`، `CF_AI_TOKEN` (توکن با دسترسی Workers AI)، `R2_ACCESS_KEY_ID`، `R2_SECRET_ACCESS_KEY`، `R2_BUCKET` (=`amf-media`)، `CALLBACK_URL` (=`PUBLIC_URL/cb/github`)، `CALLBACK_SECRET`، و اختیاری برای Drive: `GDRIVE_CLIENT_ID`، `GDRIVE_CLIENT_SECRET`، `GDRIVE_REFRESH_TOKEN`، `GDRIVE_FOLDER_ID`.
-متغیر (Variables): `FACTORY_ENABLED=true`.
-
-## ۵. استقرار Worker و پنل
-```bash
-cd worker && pnpm deploy          # ساخت پنل وب + wrangler deploy
-```
-
-## ۶. وصل کردن وب‌هوک تلگرام
-```bash
-curl -s "https://api.telegram.org/bot<TOKEN>/setWebhook" \
-  -d url="$PUBLIC_URL/tg/webhook" -d secret_token="$TG_WEBHOOK_SECRET" \
-  -d 'allowed_updates=["message","callback_query"]'
-```
-Worker هر درخواستی را که هدر `X-Telegram-Bot-Api-Secret-Token` درست نداشته باشد رد می‌کند.
-
-## ۷. آزمون
-در تلگرام `/start` و سپس `/new` را بزنید. برای پنل وب، `/panel` لینک یک‌بارمصرف ۱۰ دقیقه‌ای می‌دهد.
 
 ## قانون سخت
-هیچ بخشی از این برنامه به یوتیوب آپلود نمی‌کند. کانال `youtube.com/@Alibaghbani1hand` در سه لایه (Worker، مرحله‌ی guard در Actions، و guard پایپ‌لاین) مسدود است.
+هیچ بخشی از این برنامه در یوتیوب آپلود نمی‌کند. کانال `youtube.com/@Alibaghbani1hand` در سه لایه مسدود است: Worker، مرحله‌ی guard در Actions و guard پایپ‌لاین.
+
+## نکته‌ی حریم خصوصی
+مخزن عمومی است، پس Releaseهای کارها هم برای هر کسی که لینک را داشته باشد قابل دیدن‌اند. برای فایل‌های تأییدنشده‌ی حساس، بعداً می‌توان R2 را فعال کرد. این کار در داشبورد Cloudflare انجام می‌شود و ممکن است ثبت روش پرداخت لازم باشد.

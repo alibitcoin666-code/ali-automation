@@ -439,7 +439,7 @@ const Newsroom: React.FC<BgProps> = ({ theme, seed }) => {
       <svg width={width} height={height} style={{ position: "absolute", opacity: 0.12 }}>
         <circle cx={width * 0.78} cy={height * 0.42} r={height * 0.36} fill="none" stroke={p.text} strokeWidth="1" />
         {new Array(9).fill(0).map((_, i) => (
-          <ellipse key={i} cx={width * 0.78} cy={height * 0.42} rx={height * 0.36 * Math.cos((i / 9) * Math.PI)} ry={height * 0.36} fill="none" stroke={p.text} strokeWidth="1" transform={`rotate(${(f * 0.2) % 360} ${width * 0.78} ${height * 0.42})`} />
+          <ellipse key={i} cx={width * 0.78} cy={height * 0.42} rx={Math.abs(height * 0.36 * Math.cos((i / 9) * Math.PI))} ry={height * 0.36} fill="none" stroke={p.text} strokeWidth="1" transform={`rotate(${(f * 0.2) % 360} ${width * 0.78} ${height * 0.42})`} />
         ))}
         {new Array(7).fill(0).map((_, i) => (
           <ellipse key={`l${i}`} cx={width * 0.78} cy={height * 0.42} rx={height * 0.36} ry={height * 0.36 * Math.sin(((i + 1) / 8) * Math.PI) * 0.4} fill="none" stroke={p.text} strokeWidth="1" />

@@ -1,0 +1,44 @@
+name: e2e
+# Full cloud test of one job through the deployed Worker: script → preview → final with QA gate.
+# Approvals are automatic here because this is a test run; real jobs wait for the owner's Approve.
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        type: choice
+        options: [pianova, musicradio69, onehandonedream, neutral]
+        default: pianova
+      type:
+        type: choice
+        options: [EDUCATIONAL, PROMO, NEWS]
+        default: EDUCATIONAL
+      format:
+        type: choice
+        options: [shorts_9x16, landscape_16x9]
+        default: shorts_9x16
+      duration:
+        default: "30"
+      topic:
+        default: "سه نکته برای تمرین روزانه‌ی پیانو"
+permissions:
+  contents: read
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      AMF_PUBLIC_URL: ${{ vars.AMF_PUBLIC_URL || 'https://ali-motion-factory.ali-bitcoin666.workers.dev' }}
+      CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: scripts
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: run one job end to end
+        env:
+          E2E_REQUEST: ${{ toJSON(inputs) }}
+        run: |
+          export E2E_REQUEST=$(jq -c '{channel, type, format, durationSec: (.duration|tonumber), topic, fps: (if .channel=="musicradio69" then 60 else 30 end)}' <<<"$E2E_REQUEST")
+          node scripts/e2e.mjs

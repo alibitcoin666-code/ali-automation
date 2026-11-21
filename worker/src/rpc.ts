@@ -1,5 +1,8 @@
 import type { Env } from "./env";
 import { storeStub } from "./store";
+import { startJob, approve } from "./jobs";
+import { getJob, events } from "./db";
+import { ownerId } from "./env";
 
 /**
  * POST /cb/rpc — called only by the GitHub Actions workflows (HMAC-verified in index.ts).
@@ -11,6 +14,10 @@ export type RpcCall =
   | { op: "putLink"; key: string; url: string; size: number; ctype?: string }
   | { op: "list"; prefix: string }
   | { op: "claim"; max?: number }
+  /* end-to-end test harness (e2e.yml) — same guard, cap and queue as the bot */
+  | { op: "createJob"; request: unknown }
+  | { op: "job"; id: string }
+  | { op: "approve"; id: string; stage: "s" | "p" }
   | { op: "flux"; prompt: string; steps?: number; seed?: number }
   | { op: "text"; model?: string; messages: { role: "system" | "user" | "assistant"; content: string }[]; max_tokens?: number; temperature?: number };
 
@@ -46,6 +53,15 @@ export async function rpc(env: Env, c: RpcCall): Promise<Response> {
     case "list":
       if (!/^jobs\/[0-9]{8}-[0-9a-z]{6}\/$/.test(c.prefix)) return j({ error: "bad prefix" }, 400);
       return j(await s.listBlobs(c.prefix, 500));
+    case "createJob":
+      return j(await startJob(env, ownerId(env), c.request));
+    case "job": {
+      if (!/^[0-9]{8}-[0-9a-z]{6}$/.test(c.id)) return j({ error: "bad id" }, 400);
+      return j({ job: await getJob(env, c.id), events: await events(env, c.id) });
+    }
+    case "approve":
+      if (!/^[0-9]{8}-[0-9a-z]{6}$/.test(c.id)) return j({ error: "bad id" }, 400);
+      return j({ message: await approve(env, c.id, c.stage) });
     case "claim":
       return j(await s.claim(Math.min(8, c.max ?? 4)));
     case "flux": {
