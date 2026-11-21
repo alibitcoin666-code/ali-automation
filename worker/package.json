@@ -1,0 +1,34 @@
+{
+  "name": "@amf/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:panel": "vite build --config panel/vite.config.ts",
+    "build:demo": "AMF_PANEL_DEMO=1 vite build --config panel/vite.config.ts --outDir ../dist-demo",
+    "dev": "wrangler dev",
+    "deploy": "pnpm build:panel && wrangler deploy",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "grammy": "^1.38.0",
+    "zod": "4"
+  },
+  "devDependencies": {
+    "@amf/engine": "workspace:^",
+    "@amf/pipeline": "workspace:^",
+    "@cloudflare/workers-types": "^5.20261119.1",
+    "@remotion/player": "4.0.545",
+    "@types/react": "19",
+    "@types/react-dom": "19",
+    "@vitejs/plugin-react": "^5.0.0",
+    "react": "19",
+    "react-dom": "19",
+    "remotion": "4.0.545",
+    "typescript": "^7.0.2",
+    "vite": "^7.0.0",
+    "vitest": "^5.1.1",
+    "wrangler": "^4.40.0"
+  }
+}

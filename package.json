@@ -1,0 +1,12 @@
+{
+  "name": "ali-motion-factory",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "studio": "pnpm --filter @amf/engine studio",
+    "fonts:install": "bash scripts/install-fonts.sh"
+  }
+}

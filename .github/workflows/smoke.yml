@@ -1,0 +1,37 @@
+name: smoke-matrix
+# Renders every brand × format template gallery and brand proof still — catches layout / font regressions.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 1"
+permissions:
+  contents: read
+jobs:
+  gallery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [pianova, musicradio69, onehandonedream, neutral]
+        format: ["16x9", "9x16"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null && bash scripts/install-fonts.sh
+      - run: pnpm --filter @amf/engine exec remotion browser ensure
+      - name: render gallery + proof still
+        working-directory: engine
+        run: |
+          npx remotion render src/index.ts "Gallery-${{ matrix.channel }}-${{ matrix.format }}" "/tmp/smoke/gallery-${{ matrix.channel }}-${{ matrix.format }}.mp4" --scale 0.5 --crf 23
+          node --experimental-strip-types --no-warnings scripts/stills.mjs /tmp/smoke "BrandProof-${{ matrix.channel }}:0"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: smoke-${{ matrix.channel }}-${{ matrix.format }}
+          path: /tmp/smoke
+          retention-days: 14

@@ -1,0 +1,37 @@
+{
+  "version": 1, "jobId": "mr69-promo", "type": "PROMO", "channel": "musicradio69", "format": "landscape_16x9", "language": "fa-IR",
+  "title": "موزیک رادیو ۶۹ — پخش زنده‌ی هر شب",
+  "mainStyle": "audioReactive", "accentStyles": ["neonGlow", "kineticTypography"],
+  "scenes": [
+    { "id": "s1", "sceneType": "hook", "style": "audioReactive", "transitionIn": "zoomBlur",
+      "voiceText": "صدای شب‌های تو، اینجاست.",
+      "onScreenText": ["موزیک رادیو ۶۹"],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s2", "sceneType": "pain", "style": "neonGlow", "transitionIn": "glitch",
+      "voiceText": "از پلی‌لیست‌های تکراری خسته شده‌ای؟",
+      "onScreenText": ["پلی‌لیست تکراری؟"],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s3", "sceneType": "benefit", "style": "audioReactive", "transitionIn": "whipPan",
+      "voiceText": "هر شب، گلچین تازه با میکس زنده و بدون تبلیغ.",
+      "onScreenText": ["گلچین تازه", "میکس زنده"], "icons": ["music", "radio"],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s4", "sceneType": "proof", "style": "kineticTypography", "transitionIn": "glitch",
+      "voiceText": "هر قسمت، یک ساعت موسیقی انتخاب‌شده با دقت.",
+      "onScreenText": ["۶۰ دقیقه موسیقی"], "emphasis": ["۶۰"],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s5", "sceneType": "offer", "style": "neonGlow", "transitionIn": "zoomBlur",
+      "voiceText": "پخش زنده، هر شب ساعت نه.",
+      "onScreenText": ["هر شب ساعت ۹"], "emphasis": ["۹"],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s6", "sceneType": "cta", "style": "audioReactive", "transitionIn": "whipPan",
+      "voiceText": "همین حالا سابسکرایب کن و زنگوله را بزن.",
+      "onScreenText": ["سابسکرایب کن"],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } }
+  ],
+  "youtube": {
+    "title": "موزیک رادیو ۶۹ | پخش زنده هر شب ساعت ۹",
+    "description": "هر شب یک ساعت گلچین تازه با میکس زنده.",
+    "hashtags": ["#موزیک_رادیو_۶۹", "#موسیقی", "#پخش_زنده"]
+  },
+  "factCheckConfirmed": false
+}

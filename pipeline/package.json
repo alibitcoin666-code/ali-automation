@@ -1,0 +1,25 @@
+{
+  "name": "@amf/pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./core": "./src/core/index.ts",
+    "./core/*": "./src/core/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json",
+    "job": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@remotion/captions": "4.0.545",
+    "zod": "4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
+  }
+}

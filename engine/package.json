@@ -1,0 +1,41 @@
+{
+  "name": "@amf/engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "render": "remotion render src/index.ts",
+    "still": "remotion still src/index.ts"
+  },
+  "dependencies": {
+    "@amf/pipeline": "workspace:^",
+    "@remotion/bundler": "4.0.545",
+    "@remotion/captions": "4.0.545",
+    "@remotion/cli": "4.0.545",
+    "@remotion/effects": "4.0.545",
+    "@remotion/fonts": "4.0.545",
+    "@remotion/google-fonts": "4.0.545",
+    "@remotion/layout-utils": "4.0.545",
+    "@remotion/lottie": "4.0.545",
+    "@remotion/media": "4.0.545",
+    "@remotion/media-utils": "4.0.545",
+    "@remotion/noise": "4.0.545",
+    "@remotion/paths": "4.0.545",
+    "@remotion/renderer": "4.0.545",
+    "@remotion/shapes": "4.0.545",
+    "@remotion/transitions": "4.0.545",
+    "lottie-web": "^5.13.0",
+    "react": "19",
+    "react-dom": "19",
+    "remotion": "4.0.545",
+    "zod": "4",
+    "@amf/styles": "workspace:^",
+    "@amf/templates": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/react": "19",
+    "typescript": "^7.0.2"
+  }
+}

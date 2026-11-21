@@ -1,0 +1,9 @@
+# CPU-only inference on GitHub-hosted runners (install torch from the CPU index first).
+torch==2.*
+torchaudio==2.*
+transformers>=4.46,<6
+soundfile>=0.12
+scipy>=1.13
+numpy>=2
+edge-tts>=7
+faster-whisper>=1.1

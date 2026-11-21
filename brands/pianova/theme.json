@@ -1,0 +1,19 @@
+{
+  "id": "pianova",
+  "displayName": "PIANOVA",
+  "handle": "@pianova",
+  "wordmark": { "primary": "PIANOVA", "secondary": "ONE HAND, ONE DREAM" },
+  "palette": {
+    "bg": "#07090F", "bgAlt": "#0E1A2E", "primary": "#F3EBDD", "accent": "#C9A45C", "accent2": "#8A6A2F",
+    "text": "#F7F1E6", "textMuted": "#B9AE98", "captionText": "#FFFFFF", "captionHighlight": "#E8C77E",
+    "captionStroke": "#05070C", "captionBox": "rgba(5,8,14,0.62)"
+  },
+  "fonts": { "captionFa": "Vazirmatn", "bodyFa": "Vazirmatn", "headingFa": "Estedad", "displayFa": "MarkaziText", "titleLatin": "Cinzel", "bodyLatin": "CormorantGaramond" },
+  "allowedStyles": ["cinematicLuxury", "kineticTypography", "parallaxDepth", "lightLeakFilm", "audioReactive"],
+  "allowedFps": [30],
+  "allow4k": true,
+  "voice": { "gemini": "Sulafat", "edge": "fa-IR-DilaraNeural", "stylePrompt": "Read in warm, calm, elegant Persian like a kind piano teacher. Natural pace, clear diction, no exaggeration." },
+  "music": { "ledger": "brands/pianova/music/ledger.json", "mood": "piano-ambient" },
+  "dictionary": "brands/pianova/dictionary.txt",
+  "blockedTargets": ["youtube.com/@Alibaghbani1hand"]
+}

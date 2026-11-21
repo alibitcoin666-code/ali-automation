@@ -1,0 +1,7 @@
+packages:
+  - engine
+  - pipeline
+  - worker
+  - styles
+  - templates
+  - qa

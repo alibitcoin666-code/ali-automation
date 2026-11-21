@@ -1,0 +1,18 @@
+{
+  "id": "neutral",
+  "displayName": "ALI MOTION",
+  "wordmark": { "primary": "ALI MOTION", "secondary": "FACTORY" },
+  "palette": {
+    "bg": "#0B1020", "bgAlt": "#131B33", "primary": "#FFFFFF", "accent": "#4F8CFF", "accent2": "#22C3A6",
+    "text": "#F3F6FC", "textMuted": "#9AA6C0", "captionText": "#FFFFFF", "captionHighlight": "#7FB2FF",
+    "captionStroke": "#060A14", "captionBox": "rgba(6,10,20,0.62)"
+  },
+  "fonts": { "captionFa": "Vazirmatn", "bodyFa": "Vazirmatn", "headingFa": "Estedad", "titleLatin": "Inter", "bodyLatin": "Inter" },
+  "allowedStyles": ["cinematicLuxury", "kineticTypography", "flat2dExplainer", "isometric25d", "parallaxDepth", "liquidGlass", "neonGlow", "dataViz", "broadcastNews", "paperCollage", "minimalSwiss", "audioReactive", "motionTrails", "lightLeakFilm", "hero3d", "noiseFields"],
+  "allowedFps": [30, 60],
+  "allow4k": true,
+  "voice": { "gemini": "Kore", "edge": "fa-IR-DilaraNeural", "stylePrompt": "Read in clear, neutral, professional Persian like a trusted news and education presenter." },
+  "music": { "ledger": "brands/neutral/music/ledger.json", "mood": "corporate-light" },
+  "dictionary": "brands/neutral/dictionary.txt",
+  "blockedTargets": ["youtube.com/@Alibaghbani1hand"]
+}

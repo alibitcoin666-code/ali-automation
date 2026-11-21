@@ -1,0 +1,42 @@
+{
+  "version": 1, "jobId": "ohod-story", "type": "EDUCATIONAL", "channel": "onehandonedream", "format": "landscape_16x9", "language": "fa-IR",
+  "title": "یک دست، یک رؤیا — نواختن با دست چپ",
+  "mainStyle": "cinematicLuxury", "accentStyles": ["lightLeakFilm", "kineticTypography"],
+  "scenes": [
+    { "id": "s1", "sceneType": "hook", "style": "cinematicLuxury", "transitionIn": "fade",
+      "voiceText": "من با یک دست پیانو می‌زنم؛ و این داستان، از یک تصمیم ساده شروع شد.",
+      "onScreenText": ["یک دست، یک رؤیا"],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s2", "sceneType": "problem", "style": "lightLeakFilm", "transitionIn": "filmBurn",
+      "voiceText": "خیلی‌ها گفتند پیانو بدون دو دست ممکن نیست. اما موسیقی، به دل نیاز دارد نه به تعداد انگشت‌ها.",
+      "onScreenText": ["«ممکن نیست»؟"],
+      "lowerThird": { "title": "علی باغبانی", "subtitle": "یک دست، یک رؤیا" },
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s3", "sceneType": "step", "style": "cinematicLuxury", "transitionIn": "lightSweep",
+      "voiceText": "قدم اول: با دست چپ، نت پایه را در بم بزن تا ریتم شکل بگیرد.",
+      "onScreenText": ["دست چپ: نت پایه"], "pianoNotes": [0, 7],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s4", "sceneType": "step", "style": "cinematicLuxury", "transitionIn": "maskWipeRtl",
+      "voiceText": "قدم دوم: با همان دست، آکورد را شکسته و پشت سر هم بنواز.",
+      "onScreenText": ["آکورد شکسته"], "pianoNotes": [7, 9, 11, 9],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s5", "sceneType": "step", "style": "cinematicLuxury", "transitionIn": "lightSweep",
+      "voiceText": "قدم سوم: پدال را نگه دار تا صداها به هم ببافند و ملودی کامل شود.",
+      "onScreenText": ["پدال؛ صدای کامل"], "pianoNotes": [0, 7, 9, 11, 14],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s6", "sceneType": "recap", "style": "kineticTypography", "transitionIn": "fade",
+      "voiceText": "نت پایه، آکورد شکسته و پدال؛ سه کلید ساده برای نواختن با یک دست.",
+      "onScreenText": ["پایه · شکسته · پدال"],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
+    { "id": "s7", "sceneType": "cta", "style": "lightLeakFilm", "transitionIn": "filmBurn",
+      "voiceText": "اگر تو هم رؤیایی داری، همین امروز شروع کن. با من همراه باش.",
+      "onScreenText": ["همین امروز شروع کن"],
+      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } }
+  ],
+  "youtube": {
+    "title": "یک دست، یک رؤیا | نواختن پیانو با دست چپ",
+    "description": "داستان و سه تکنیک ساده برای نواختن پیانو فقط با دست چپ.",
+    "hashtags": ["#یک_دست_یک_رؤیا", "#پیانو", "#علی_باغبانی"]
+  },
+  "factCheckConfirmed": false
+}

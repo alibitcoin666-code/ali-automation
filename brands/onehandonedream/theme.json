@@ -1,0 +1,19 @@
+{
+  "id": "onehandonedream",
+  "displayName": "ONE HAND, ONE DREAM",
+  "handle": "@onehandonedream",
+  "wordmark": { "primary": "ONE HAND, ONE DREAM", "secondary": "ALI BAGHBANI" },
+  "palette": {
+    "bg": "#0A0A0B", "bgAlt": "#1A1A1C", "primary": "#E9D3A0", "accent": "#C9A04E", "accent2": "#C2551F",
+    "text": "#F5EFE3", "textMuted": "#A89F90", "captionText": "#FFFFFF", "captionHighlight": "#E6B566",
+    "captionStroke": "#000000", "captionBox": "rgba(8,8,9,0.6)"
+  },
+  "fonts": { "captionFa": "Vazirmatn", "bodyFa": "Vazirmatn", "headingFa": "Estedad", "displayFa": "MarkaziText", "titleLatin": "PlayfairDisplay", "bodyLatin": "Inter" },
+  "allowedStyles": ["cinematicLuxury", "kineticTypography", "paperCollage", "lightLeakFilm"],
+  "allowedFps": [30],
+  "allow4k": false,
+  "voice": { "gemini": "Charon", "edge": "fa-IR-FaridNeural", "stylePrompt": "Read in a deep, sincere, inspirational Persian voice. Slow, warm, with meaningful pauses, never theatrical." },
+  "music": { "ledger": "brands/onehandonedream/music/ledger.json", "mood": "cinematic-hope" },
+  "dictionary": "brands/onehandonedream/dictionary.txt",
+  "blockedTargets": ["youtube.com/@Alibaghbani1hand"]
+}

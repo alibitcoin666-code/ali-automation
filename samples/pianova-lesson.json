@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "jobId": "pianova-lesson",
+  "type": "EDUCATIONAL",
+  "channel": "pianova",
+  "format": "landscape_16x9",
+  "language": "fa-IR",
+  "title": "اولین آکورد پیانو در سه قدم",
+  "mainStyle": "cinematicLuxury",
+  "accentStyles": [
+    "kineticTypography",
+    "lightLeakFilm"
+  ],
+  "scenes": [
+    {
+      "id": "s1",
+      "sceneType": "hook",
+      "style": "cinematicLuxury",
+      "transitionIn": "fade",
+      "voiceText": "اگر همیشه فکر می‌کردید نواختن آکورد پیانو سخت است، این ویدیو برای شماست. امروز در کمتر از دو دقیقه، اولین آکورد واقعی‌تان را می‌نوازید.",
+      "onScreenText": [
+        "اولین آکورد پیانو",
+        "در ۳ قدم ساده"
+      ],
+      "emphasis": [
+        "۳"
+      ],
+      "pianoNotes": [
+        7,
+        9,
+        11
+      ],
+      "visual": {
+        "prompt": "grand piano keys in warm golden light, shallow depth of field",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s2",
+      "sceneType": "problem",
+      "style": "kineticTypography",
+      "transitionIn": "maskWipeRtl",
+      "voiceText": "بیشتر هنرجوها آکوردها را مثل یک شکل حفظ می‌کنند و خیلی زود فراموش می‌کنند. راز ماندگاری، فهمیدن فاصله‌ی بین نت‌هاست.",
+      "onScreenText": [
+        "حفظ نکنید؛ بفهمید",
+        "راز آکورد: فاصله‌ها"
+      ],
+      "icons": [
+        "bulb",
+        "music"
+      ],
+      "lowerThird": {
+        "title": "پیانووا",
+        "subtitle": "درس ۱ · آکورد ماژور"
+      },
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s3",
+      "sceneType": "step",
+      "style": "cinematicLuxury",
+      "transitionIn": "lightSweep",
+      "voiceText": "قدم اول: انگشت شست دست راست را روی نت دو بگذارید؛ این نت، پایه‌ی آکورد ماست.",
+      "onScreenText": [
+        "شست روی نت دو"
+      ],
+      "pianoNotes": [
+        7
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s4",
+      "sceneType": "step",
+      "style": "cinematicLuxury",
+      "transitionIn": "maskWipeRtl",
+      "voiceText": "قدم دوم: دو کلید سفید جلوتر بروید و انگشت میانی را روی نت می قرار دهید.",
+      "onScreenText": [
+        "انگشت میانی روی می"
+      ],
+      "pianoNotes": [
+        7,
+        9
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s5",
+      "sceneType": "step",
+      "style": "cinematicLuxury",
+      "transitionIn": "lightSweep",
+      "voiceText": "قدم سوم: انگشت کوچک را روی نت سل بگذارید. حالا هر سه انگشت را با هم و آرام فشار دهید.",
+      "onScreenText": [
+        "انگشت کوچک روی سل",
+        "هر سه با هم"
+      ],
+      "pianoNotes": [
+        11,
+        7,
+        9,
+        11
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s6",
+      "sceneType": "recap",
+      "style": "kineticTypography",
+      "transitionIn": "fade",
+      "voiceText": "پس آکورد دو ماژور یعنی دو، می و سل؛ یک در میان، روی کلیدهای سفید. همین الگو را از هر نتی شروع کنید تا آکوردهای ماژور دیگر را هم بسازید.",
+      "onScreenText": [
+        "دو، می، سل",
+        "الگوی یک در میان",
+        "از هر نتی شروع کنید"
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s7",
+      "sceneType": "cta",
+      "style": "lightLeakFilm",
+      "transitionIn": "filmBurn",
+      "voiceText": "اگر این درس برایتان مفید بود، پیانووا را دنبال کنید. در قسمت بعد، آکورد مینور را با هم یاد می‌گیریم.",
+      "onScreenText": [
+        "قسمت بعد: آکورد مینور"
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    }
+  ],
+  "youtube": {
+    "title": "اولین آکورد پیانو در ۳ قدم ساده | درس ۱ پیانووا",
+    "description": "در این درس کوتاه، آکورد دو ماژور را با روش فاصله‌ها یاد می‌گیرید؛ بدون حفظ کردن.\n\nبا همین الگوی یک در میان می‌توانید همه‌ی آکوردهای ماژور را بسازید.\n\nقسمت بعد: آکورد مینور.",
+    "hashtags": [
+      "#پیانو",
+      "#آموزش_پیانو",
+      "#آکورد",
+      "#پیانووا",
+      "#موسیقی",
+      "#Pianova"
+    ]
+  },
+  "factCheckConfirmed": false
+}

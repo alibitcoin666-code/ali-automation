@@ -1,0 +1,19 @@
+{
+  "id": "musicradio69",
+  "displayName": "MUSIC RADIO 69",
+  "handle": "@musicradio69",
+  "wordmark": { "primary": "MUSIC RADIO 69", "secondary": "FEEL THE MUSIC" },
+  "palette": {
+    "bg": "#050506", "bgAlt": "#141417", "primary": "#D8DCE2", "accent": "#D4AF37", "accent2": "#7A7F87",
+    "text": "#F4F5F7", "textMuted": "#9AA0A8", "captionText": "#FFFFFF", "captionHighlight": "#F2C94C",
+    "captionStroke": "#000000", "captionBox": "rgba(0,0,0,0.6)"
+  },
+  "fonts": { "captionFa": "Vazirmatn", "bodyFa": "Vazirmatn", "headingFa": "Estedad", "titleLatin": "Michroma", "bodyLatin": "Montserrat" },
+  "allowedStyles": ["audioReactive", "neonGlow", "minimalSwiss", "motionTrails", "kineticTypography"],
+  "allowedFps": [30, 60],
+  "allow4k": false,
+  "voice": { "gemini": "Fenrir", "edge": "fa-IR-FaridNeural", "stylePrompt": "Read in energetic, confident Persian like a modern radio host. Punchy but clear, natural rhythm." },
+  "music": { "ledger": "brands/musicradio69/music/ledger.json", "mood": "electronic-pulse" },
+  "dictionary": "brands/musicradio69/dictionary.txt",
+  "blockedTargets": ["youtube.com/@Alibaghbani1hand"]
+}

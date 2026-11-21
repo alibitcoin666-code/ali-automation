@@ -1,0 +1,15 @@
+node_modules
+out/
+.cache/
+*.log
+.env*
+!.env.example
+.wrangler/
+jobs-local/
+dist/
+__pycache__/
+*.pyc
+.work/
+worker/dist-demo/
+.venv*/
+.claude/

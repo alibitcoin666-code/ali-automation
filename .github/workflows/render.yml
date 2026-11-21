@@ -1,0 +1,120 @@
+name: render
+# Dispatched by the Worker (POST /actions/workflows/render.yml/dispatches). One job stage per run.
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: Job id (yyyymmdd-xxxxxx)
+        required: true
+      stage:
+        description: script | preview | final
+        required: true
+        type: choice
+        options: [script, preview, final]
+permissions:
+  contents: read
+concurrency:
+  group: job-${{ inputs.job_id }}
+  cancel-in-progress: false
+env:
+  JOB: ${{ inputs.job_id }}
+  STAGE: ${{ inputs.stage }}
+  AMF_WORK: ${{ github.workspace }}/.work
+  R2: s3://${{ secrets.R2_BUCKET }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: auto
+  R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+  CALLBACK_URL: ${{ secrets.CALLBACK_URL }}
+  CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
+  FACTORY_ENABLED: ${{ vars.FACTORY_ENABLED || 'true' }}
+defaults:
+  run:
+    shell: bash
+jobs:
+  run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: validate inputs
+        run: |
+          [[ "$JOB" =~ ^[0-9]{8}-[0-9a-z]{6}$ ]] || { echo "::error::bad job id"; exit 1; }
+      - uses: actions/checkout@v7
+      - name: download job from R2
+        run: |
+          mkdir -p "$AMF_WORK/jobs/$JOB"
+          aws s3 sync "$R2/jobs/$JOB/" "$AMF_WORK/jobs/$JOB/" --endpoint-url "$R2_ENDPOINT" --exclude "out/*" --exclude "render/*.mp4" --only-show-errors
+      - name: guard (protected channels, kill switch)
+        run: node scripts/guard-request.mjs "$AMF_WORK/jobs/$JOB"
+      - run: node scripts/callback.mjs "$JOB" "$STAGE" running
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-python@v7
+        if: inputs.stage != 'script'
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/py/requirements.txt
+      - name: python deps (CPU torch)
+        if: inputs.stage != 'script'
+        run: |
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchaudio
+          pip install -r pipeline/py/requirements.txt
+          echo "AMF_PYTHON=$(which python)" >> "$GITHUB_ENV"
+      - uses: actions/cache@v6
+        if: inputs.stage != 'script'
+        with:
+          path: ~/.cache/huggingface
+          key: hf-wav2vec2-fa-whisper-v1 # gitleaks:allow (cache key, not a secret)
+      - name: ffmpeg + fonts + headless Chrome
+        if: inputs.stage != 'script'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fontconfig >/dev/null
+          bash scripts/install-fonts.sh
+          pnpm --filter @amf/engine exec remotion browser ensure
+      - name: script (Gemini → zod, one auto-repair)
+        if: inputs.stage == 'script'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        working-directory: pipeline
+        run: npx tsx src/cli.ts script --id "$JOB" --request "$AMF_WORK/jobs/$JOB/request.json" --edits "$AMF_WORK/jobs/$JOB/edits.json" 2>&1 | tee "$RUNNER_TEMP/stage.log"
+      - name: images (flux-1-schnell on Workers AI, no text)
+        if: inputs.stage == 'preview'
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_AI_TOKEN: ${{ secrets.CF_AI_TOKEN }}
+        run: node scripts/flux-assets.mjs "$AMF_WORK/jobs/$JOB" || echo "::warning::image generation skipped — SVG visuals are used"
+      - name: produce ${{ inputs.stage }}
+        if: inputs.stage != 'script'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AMF_WHISPER_MODEL: large-v3-turbo
+        working-directory: pipeline
+        run: |
+          set -o pipefail
+          FPS=$(node -e "const r=require('$AMF_WORK/jobs/$JOB/request.json');console.log(r.fps||30)")
+          K4=$(node -e "const r=require('$AMF_WORK/jobs/$JOB/request.json');console.log(r.quality==='4k'?'--4k':'')")
+          npx tsx src/cli.ts produce --id "$JOB" --stage "$STAGE" --fps "$FPS" $K4 --owner-approved 2>&1 | tee "$RUNNER_TEMP/stage.log"
+      - name: Google Drive (final only, optional)
+        if: inputs.stage == 'final' && success()
+        env:
+          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: node scripts/drive-upload.mjs "$AMF_WORK/jobs/$JOB" >> "$GITHUB_ENV" || echo "::warning::Drive upload skipped"
+      - name: upload job to R2
+        if: always()
+        run: |
+          aws s3 sync "$AMF_WORK/jobs/$JOB/" "$R2/jobs/$JOB/" --endpoint-url "$R2_ENDPOINT" --only-show-errors \
+            --exclude "public/*" --exclude "render/*.mov" --exclude "render/*silent*" --exclude "qa/proof/*" --exclude "align/*.wav"
+      - name: callback ok
+        if: success()
+        run: node scripts/callback.mjs "$JOB" "$STAGE" ok "" "$AMF_WORK/jobs/$JOB/qa/report.json"
+      - name: callback failed
+        if: failure()
+        run: node scripts/callback.mjs "$JOB" "$STAGE" failed "$RUNNER_TEMP/stage.log" "$AMF_WORK/jobs/$JOB/qa/report.json"

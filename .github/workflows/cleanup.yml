@@ -1,0 +1,32 @@
+name: cleanup
+# Deletes bulky intermediates (voice / align / audio stems, previews) from R2 for jobs older than 30 days.
+# Final MP4s, thumbnails, SRT and metadata stay. Configure an R2 lifecycle rule as a second safety net.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 1 * * 0"
+permissions:
+  contents: read
+jobs:
+  clean:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+      BUCKET: ${{ secrets.R2_BUCKET }}
+    steps:
+      - name: delete intermediates older than 30 days
+        run: |
+          cutoff=$(date -u -d '30 days ago' +%Y%m%d)
+          aws s3 ls "s3://$BUCKET/jobs/" --endpoint-url "$R2_ENDPOINT" | awk '{print $2}' | tr -d / | while read -r id; do
+            [[ "$id" =~ ^[0-9]{8}- ]] || continue
+            [[ "${id%%-*}" < "$cutoff" ]] || continue
+            for p in voice align audio render; do
+              aws s3 rm "s3://$BUCKET/jobs/$id/$p/" --recursive --endpoint-url "$R2_ENDPOINT" --only-show-errors
+            done
+            aws s3 rm "s3://$BUCKET/jobs/$id/out/preview-720p.mp4" --endpoint-url "$R2_ENDPOINT" --only-show-errors || true
+            echo "cleaned $id"
+          done
