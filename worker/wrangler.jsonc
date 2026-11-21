@@ -1,6 +1,7 @@
 {
   // ALI MOTION FACTORY — Telegram bot + web panel on one Worker.
-  // Secrets (wrangler secret put): BOT_TOKEN, TG_WEBHOOK_SECRET, GITHUB_TOKEN, CALLBACK_SECRET, SESSION_SECRET
+  // Secrets (set by .github/workflows/deploy.yml): CALLBACK_SECRET, SESSION_SECRET, TG_WEBHOOK_SECRET, BOT_TOKEN (optional)
+  // Needs only a "Workers Scripts: Edit" API token — storage is a SQLite Durable Object, media are GitHub Release assets.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ali-motion-factory",
   "main": "src/index.ts",
@@ -17,11 +18,13 @@
     "FACTORY_ENABLED": "true",
     "DAILY_CAP": "6",
     "OWNER_ID": "",
-    "GITHUB_REPO": "",
+    "GITHUB_REPO": "alibitcoin666-code/ali-automation",
     "GITHUB_REF": "main",
-    "PUBLIC_URL": ""
+    "PUBLIC_URL": "https://ali-motion-factory.ali-bitcoin666.workers.dev"
   },
-  "d1_databases": [{ "binding": "DB", "database_name": "amf", "database_id": "REPLACE_WITH_D1_ID", "migrations_dir": "migrations" }],
-  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "amf-media" }],
+  "workers_dev": true,
+  "ai": { "binding": "AI" },
+  "durable_objects": { "bindings": [{ "name": "STORE", "class_name": "Store" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Store"] }],
   "triggers": { "crons": ["17 3 * * *"] }
 }

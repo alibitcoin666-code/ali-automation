@@ -36,7 +36,10 @@ export const UNITS = new Set([
 /** Words that look bad at the end of a line (they belong to the next phrase). */
 const BAD_LINE_END = new Set(["و", "به", "از", "در", "با", "که", "تا", "برای", "این", "آن", "یک", "هر", "بر", "اگر"]);
 /** Words that look bad at the start of a line (they belong to the previous phrase). */
-const BAD_LINE_START = new Set(["را", "هم", "است", "هست", "شد", "بود"]);
+const BAD_LINE_START = new Set(["را", "هم", "است", "هست", "شد", "بود", "دارد", "دارند", "داریم", "کرد", "کند", "کنید", "کن", "شود", "شده", "می‌شود", "می‌کند"]);
+
+/** Prepositions/conjunctions that start a new phrase — good places to begin a line. */
+const GOOD_LINE_START = new Set(["روی", "به", "از", "در", "با", "تا", "برای", "که", "و", "اما", "ولی", "زیر", "کنار", "بدون", "نه"]);
 
 const isNumber = (w: string) => /^[\d۰-۹٠-٩]+([.,٫][\d۰-۹]+)?%?$/.test(w);
 const isLatinStart = (w: string) => /^[«(]?[A-Za-z0-9]/.test(w);
@@ -68,6 +71,7 @@ function splitPenalty(words: string[], at: number): number {
   if (BAD_LINE_START.has(next.replace(/[،؛؟!.:»]+$/, ""))) p += 40;
   if (isLatinStart(next)) p += 60; // no line starting with Latin
   if (/[،؛.!؟:]$/.test(words[at - 1]!)) p -= 25; // prefer breaking after punctuation
+  else if (GOOD_LINE_START.has(next)) p -= 8; // or before a new prepositional phrase
   return p;
 }
 
@@ -88,7 +92,9 @@ export function breakLines(words: string[], maxChars = 42, maxLines = 2): BreakR
     const fits = a <= maxChars && b <= maxChars;
     // Prefer the top line slightly shorter or equal (pyramid reads well for captions).
     const balance = Math.abs(a - b) + (a > b ? 2 : 0);
-    const penalty = balance + splitPenalty(words, at) + (fits ? 0 : 10000);
+    // an orphan line (e.g. a lone "دو:" label) reads badly even after punctuation
+    const orphan = Math.min(a, b) < 0.34 * Math.max(a, b) ? 30 : 0;
+    const penalty = balance + orphan + splitPenalty(words, at) + (fits ? 0 : 10000);
     if (!best || penalty < best.penalty) {
       best = {
         lines: [words.slice(0, at).join(" "), words.slice(at).join(" ")],

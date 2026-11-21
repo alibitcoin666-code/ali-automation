@@ -22,8 +22,8 @@ export const LowerThird: React.FC<{ theme: BrandTheme; title: string; subtitle?:
     <div data-amf-layer="lowerThird" data-amf-text={subtitle ? `${title} ${subtitle}` : title} dir="rtl" lang="fa" style={{ position: "absolute", left: x, top: y, width: w, height: h, opacity: o, display: "flex", flexDirection: "row", alignItems: "stretch" }}>
       <div style={{ width: 6, background: goldFill(p.accent), transform: `scaleY(${bar})`, borderRadius: 3 }} />
       <div style={{ flex: "0 1 auto", minWidth: w * 0.45, clipPath: `inset(0 0 0 ${(1 - t) * 100}%)`, background: `linear-gradient(270deg, ${hexA(p.bg, 0.88)}, ${hexA(p.bgAlt, 0.55)} 85%, transparent)`, padding: `0 ${h * 0.28}px`, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div style={fa({ fontFamily: theme.fonts.headingFa, fontWeight: 700, fontSize: h * 0.4, lineHeight: 1.3, color: p.text })}>{title}</div>
-        {subtitle && <div style={fa({ fontFamily: theme.fonts.bodyFa, fontWeight: 500, fontSize: h * 0.26, lineHeight: 1.35, color: p.accent })}>{subtitle}</div>}
+        <div style={fa({ fontFamily: theme.fonts.headingFa, fontWeight: 700, fontSize: h * 0.42, lineHeight: 1.25, color: p.text })}>{title}</div>
+        {subtitle && <div style={fa({ fontFamily: theme.fonts.bodyFa, fontWeight: 500, fontSize: h * 0.27, lineHeight: 1.3, color: p.accent })}>{subtitle}</div>}
       </div>
     </div>
   );
@@ -215,6 +215,7 @@ export const Thumbnail: React.FC<{ theme: BrandTheme; title: string; kicker?: st
       ) : (
         <AbsoluteFill style={{ background: `radial-gradient(ellipse 70% 80% at 25% 40%, ${hexA(p.accent, 0.35)}, transparent 60%), radial-gradient(ellipse 60% 60% at 80% 80%, ${p.bgAlt}, ${p.bg})` }} />
       )}
+      {!imageSrc && <ThumbHero theme={theme} width={width} height={height} portrait={portrait} />}
       <AbsoluteFill style={{ background: `linear-gradient(270deg, ${hexA(p.bg, 0.92)} 0%, ${hexA(p.bg, 0.55)} 55%, transparent 100%)` }} />
       <div style={{ position: "absolute", right: pad, top: portrait ? 340 : pad, width: (portrait ? width : width * 0.66) - pad * 2, height: portrait ? height - 340 - 700 : height - pad * 2, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "flex-end", gap: 20 }}>
         {kicker && (
@@ -227,5 +228,59 @@ export const Thumbnail: React.FC<{ theme: BrandTheme; title: string; kicker?: st
       </div>
       <Vignette amount={0.4} />
     </AbsoluteFill>
+  );
+};
+
+
+/** Brand hero graphic for thumbnails without a generated image (never contains text). */
+const ThumbHero: React.FC<{ theme: BrandTheme; width: number; height: number; portrait: boolean }> = ({ theme, width, height, portrait }) => {
+  const p = theme.palette;
+  if (theme.id === "pianova" || theme.id === "onehandonedream") {
+    // perspective keyboard with one glowing key
+    const keys = 15;
+    const kw = (portrait ? width * 1.1 : width * 0.5) / keys;
+    const kh = kw * 5.2;
+    const glow = 7;
+    return (
+      <div style={{ position: "absolute", left: portrait ? -width * 0.05 : -kw, top: portrait ? height * 0.71 : height * 0.44, transform: "perspective(1400px) rotateX(42deg) rotateZ(-8deg)", transformOrigin: "30% 0%" }}>
+        <svg width={kw * keys} height={kh} style={{ overflow: "visible", filter: `drop-shadow(0 30px 40px ${hexA("#000000", 0.7)})` }}>
+          <defs>
+            <linearGradient id="thw" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#fbf6ea" />
+              <stop offset="1" stopColor="#d9cfb8" />
+            </linearGradient>
+          </defs>
+          {Array.from({ length: keys }, (_, i) => (
+            <rect key={i} x={i * kw + 1.5} y={0} width={kw - 3} height={kh} rx={6} fill={i === glow ? p.accent : "url(#thw)"} />
+          ))}
+          {Array.from({ length: keys - 1 }, (_, i) => ([0, 1, 3, 4, 5].includes(i % 7) ? <rect key={`b${i}`} x={(i + 1) * kw - kw * 0.3} y={0} width={kw * 0.6} height={kh * 0.6} rx={4} fill="#111" /> : null))}
+          <ellipse cx={glow * kw + kw / 2} cy={kh * 0.2} rx={kw * 2.2} ry={kh * 0.5} fill={hexA(p.accent, 0.25)} />
+        </svg>
+      </div>
+    );
+  }
+  if (theme.id === "musicradio69") {
+    const cx = portrait ? width * 0.5 : width * 0.28;
+    const cy = portrait ? height * 0.68 : height * 0.52;
+    const R = Math.min(width, height) * (portrait ? 0.28 : 0.3);
+    const n = 72;
+    return (
+      <svg width={width} height={height} style={{ position: "absolute" }}>
+        <circle cx={cx} cy={cy} r={R * 0.92} fill={hexA(p.accent, 0.08)} stroke={p.accent} strokeOpacity={0.7} strokeWidth={3} />
+        {Array.from({ length: n }, (_, i) => {
+          const a = (i / n) * Math.PI * 2;
+          const v = 0.35 + 0.65 * Math.abs(Math.sin(i * 0.37) * Math.cos(i * 0.11));
+          return <line key={i} x1={cx + Math.cos(a) * R} y1={cy + Math.sin(a) * R} x2={cx + Math.cos(a) * (R + 16 + v * R * 0.45)} y2={cy + Math.sin(a) * (R + 16 + v * R * 0.45)} stroke={p.accent} strokeOpacity={0.4 + 0.5 * v} strokeWidth={5} strokeLinecap="round" />;
+        })}
+      </svg>
+    );
+  }
+  // neutral: layered accent bars
+  return (
+    <svg width={width} height={height} style={{ position: "absolute" }}>
+      {Array.from({ length: 6 }, (_, i) => (
+        <rect key={i} x={-width * 0.1 + i * width * 0.06} y={height * (portrait ? 0.55 : 0.2) + i * 26} width={width * 0.42} height={height * 0.05} rx={height * 0.025} fill={p.accent} opacity={0.12 + i * 0.1} transform={`rotate(-18 ${width * 0.2} ${height * 0.5})`} />
+      ))}
+    </svg>
   );
 };

@@ -1,41 +1,148 @@
 {
-  "version": 1, "jobId": "pianova-short", "type": "EDUCATIONAL", "channel": "pianova", "format": "shorts_9x16", "language": "fa-IR",
+  "version": 1,
+  "jobId": "pianova-short",
+  "type": "EDUCATIONAL",
+  "channel": "pianova",
+  "format": "shorts_9x16",
+  "language": "fa-IR",
   "title": "آکورد دو ماژور در ۳۰ ثانیه",
-  "mainStyle": "kineticTypography", "accentStyles": ["cinematicLuxury"],
+  "mainStyle": "kineticTypography",
+  "accentStyles": [
+    "cinematicLuxury"
+  ],
   "scenes": [
-    { "id": "s1", "sceneType": "hook", "style": "kineticTypography", "transitionIn": "fade",
+    {
+      "id": "s1",
+      "sceneType": "hook",
+      "style": "kineticTypography",
+      "transitionIn": "fade",
       "voiceText": "اولین آکورد پیانو را در سی ثانیه یاد بگیر.",
-      "onScreenText": ["آکورد دو ماژور", "در ۳۰ ثانیه"], "emphasis": ["۳۰"],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s2", "sceneType": "problem", "style": "kineticTypography", "transitionIn": "maskWipeRtl",
+      "onScreenText": [
+        "آکورد دو ماژور",
+        "در ۳۰ ثانیه"
+      ],
+      "emphasis": [
+        "۳۰"
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s2",
+      "sceneType": "problem",
+      "style": "kineticTypography",
+      "transitionIn": "maskWipeRtl",
       "voiceText": "حفظ کردن شکل آکورد جواب نمی‌دهد؛ فاصله‌ها را بفهم.",
-      "onScreenText": ["حفظ نکن؛ بفهم"],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s3", "sceneType": "step", "style": "cinematicLuxury", "transitionIn": "lightSweep",
+      "onScreenText": [
+        "حفظ نکن؛ بفهم"
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s3",
+      "sceneType": "step",
+      "style": "cinematicLuxury",
+      "transitionIn": "lightSweep",
       "voiceText": "یک: شست روی نت دو.",
-      "onScreenText": ["شست روی دو"], "pianoNotes": [7],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s4", "sceneType": "step", "style": "cinematicLuxury", "transitionIn": "maskWipeRtl",
+      "onScreenText": [
+        "شست روی دو"
+      ],
+      "pianoNotes": [
+        7
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s4",
+      "sceneType": "step",
+      "style": "cinematicLuxury",
+      "transitionIn": "maskWipeRtl",
       "voiceText": "دو: انگشت میانی روی نت می.",
-      "onScreenText": ["میانی روی می"], "pianoNotes": [7, 9],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s5", "sceneType": "step", "style": "cinematicLuxury", "transitionIn": "lightSweep",
+      "onScreenText": [
+        "میانی روی می"
+      ],
+      "pianoNotes": [
+        7,
+        9
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s5",
+      "sceneType": "step",
+      "style": "cinematicLuxury",
+      "transitionIn": "lightSweep",
       "voiceText": "سه: انگشت کوچک روی نت سل. حالا با هم فشار بده.",
-      "onScreenText": ["کوچک روی سل"], "pianoNotes": [11, 7, 9, 11],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s6", "sceneType": "recap", "style": "kineticTypography", "transitionIn": "fade",
+      "onScreenText": [
+        "کوچک روی سل"
+      ],
+      "pianoNotes": [
+        11,
+        7,
+        9,
+        11
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s6",
+      "sceneType": "recap",
+      "style": "kineticTypography",
+      "transitionIn": "fade",
       "voiceText": "دو، می، سل؛ یک در میان روی کلیدهای سفید.",
-      "onScreenText": ["یک در میان"],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s7", "sceneType": "cta", "style": "kineticTypography", "transitionIn": "fade",
+      "onScreenText": [
+        "الگوی یک‌درمیان"
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s7",
+      "sceneType": "cta",
+      "style": "kineticTypography",
+      "transitionIn": "fade",
       "voiceText": "برای آکورد بعدی، پیانووا را دنبال کن.",
-      "onScreenText": ["دنبال کن"],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } }
+      "onScreenText": [
+        "دنبال کن"
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    }
   ],
   "youtube": {
     "title": "آکورد دو ماژور در ۳۰ ثانیه #Shorts | پیانووا",
     "description": "آکورد دو ماژور با روش یک در میان؛ بدون حفظ کردن.",
-    "hashtags": ["#Shorts", "#پیانو", "#آموزش_پیانو", "#پیانووا"]
+    "hashtags": [
+      "#Shorts",
+      "#پیانو",
+      "#آموزش_پیانو",
+      "#پیانووا"
+    ]
   },
   "factCheckConfirmed": false
 }

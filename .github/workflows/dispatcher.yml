@@ -1,0 +1,42 @@
+name: dispatcher
+# The Worker holds no GitHub token. This workflow claims queued job stages from the Worker
+# (HMAC-signed POST /cb/rpc {op:"claim"}) and starts render.yml with the run's GITHUB_TOKEN.
+# workflow_dispatch events created with GITHUB_TOKEN do start new runs:
+# https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow
+# Each run polls for ~4.5 minutes, so with the 5-minute schedule a stage normally starts within a minute or two.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+permissions:
+  actions: write
+  contents: read
+concurrency:
+  group: dispatcher
+  cancel-in-progress: false
+jobs:
+  claim:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      AMF_PUBLIC_URL: ${{ vars.AMF_PUBLIC_URL || 'https://ali-motion-factory.ali-bitcoin666.workers.dev' }}
+      CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: scripts
+      - name: poll the render queue
+        run: |
+          [ -n "$CALLBACK_SECRET" ] || { echo "::warning::CALLBACK_SECRET not set — run deploy first"; exit 0; }
+          end=$(( $(date +%s) + 270 ))
+          while [ "$(date +%s)" -lt "$end" ]; do
+            items=$(node scripts/amf-rpc.mjs claim || echo "[]")
+            echo "$items" | jq -c '.[]?' | while read -r it; do
+              job=$(jq -r .jobId <<<"$it"); stage=$(jq -r .stage <<<"$it")
+              [[ "$job" =~ ^[0-9]{8}-[0-9a-z]{6}$ && "$stage" =~ ^(script|preview|final)$ ]] || continue
+              gh workflow run render.yml -R "$GITHUB_REPOSITORY" --ref "${GITHUB_REF_NAME}" -f job_id="$job" -f stage="$stage"
+              echo "started render $job/$stage"
+            done
+            sleep 20
+          done

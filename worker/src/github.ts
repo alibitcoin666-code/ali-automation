@@ -1,23 +1,13 @@
 import type { Env } from "./env";
+import { storeStub } from "./store";
 
 export type Stage = "script" | "preview" | "final";
 
 /**
- * Starts the render workflow for one job stage.
- * POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches → 204.
- * The request itself lives in R2 (jobs/<id>/request.json); only ids travel as inputs.
+ * Queues one job stage. The Worker holds no GitHub token: the `dispatcher` workflow in the repo
+ * polls POST /cb/rpc {op:"claim"} (HMAC-signed) and starts render.yml with its own GITHUB_TOKEN
+ * (workflow_dispatch events created with GITHUB_TOKEN do start new runs).
  */
-export async function dispatch(env: Env, jobId: string, stage: Stage, workflow = "render.yml") {
-  const res = await fetch(`https://api.github.com/repos/${env.GITHUB_REPO}/actions/workflows/${workflow}/dispatches`, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${env.GITHUB_TOKEN}`,
-      accept: "application/vnd.github+json",
-      "x-github-api-version": "2022-11-28",
-      "user-agent": "ali-motion-factory-worker",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({ ref: env.GITHUB_REF || "main", inputs: { job_id: jobId, stage } }),
-  });
-  if (res.status !== 204 && res.status !== 200) throw new Error(`workflow dispatch failed: HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);
+export async function dispatch(env: Env, jobId: string, stage: Stage) {
+  await storeStub(env.STORE).enqueue(jobId, stage);
 }

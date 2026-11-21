@@ -1,4 +1,5 @@
 import { log, withRetry } from "./util";
+import { workersAiAvailable, workersAiJson } from "./workersai";
 
 /**
  * Gemini Interactions API (https://ai.google.dev/gemini-api/docs/interactions).
@@ -46,6 +47,8 @@ function collect(resp: unknown, kind: "text" | "audio"): string[] {
 }
 
 export async function generateJson(opts: { models: string[]; system: string; prompt: string; schema: unknown; temperature?: number }): Promise<{ model: string; text: string }> {
+  // No Gemini key configured → Workers AI through the Worker (free daily neurons). Gemini stays first choice.
+  if (!process.env.GEMINI_API_KEY && workersAiAvailable()) return workersAiJson(opts);
   let last: unknown;
   for (const model of opts.models) {
     try {
@@ -65,6 +68,10 @@ export async function generateJson(opts: { models: string[]; system: string; pro
       last = e;
       log(`[gemini] ${model} failed, trying fallback: ${(e as Error).message.slice(0, 200)}`);
     }
+  }
+  if (workersAiAvailable()) {
+    log(`[gemini] all Gemini models failed — falling back to Workers AI`);
+    return workersAiJson(opts);
   }
   throw last;
 }

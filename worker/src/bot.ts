@@ -4,6 +4,7 @@ import { enabled, ownerId } from "./env";
 import { getDraft, setDraft, listJobs, latestActive, getJob, todayCount } from "./db";
 import { startJob, approve, reject, cancel, edit, THEMES, type ChannelId } from "./jobs";
 import { createMagic } from "./auth";
+import { storeStub } from "./store";
 import { T, CHANNEL_FA, TYPE_FA, FORMAT_FA, STATUS_FA, STYLE_FA, faDigits } from "./fa";
 
 const URL_RE = /https?:\/\/[^\s<>«»]+/g;
@@ -13,6 +14,11 @@ export function makeBot(env: Env) {
 
   // Owner-only: every other user gets one short refusal and nothing else.
   bot.use(async (ctx, next) => {
+    // First private /start claims ownership when OWNER_ID is not configured (stored once, never overwritten).
+    if (ownerId(env) === 0 && ctx.chat?.type === "private" && ctx.from && ctx.message?.text?.startsWith("/start")) {
+      env.OWNER_ID = await storeStub(env.STORE).setSettingOnce("owner_id", String(ctx.from.id));
+      if (ownerId(env) === ctx.from.id) await ctx.reply(T.ownerClaimed).catch(() => undefined);
+    }
     if (!ctx.from || ctx.from.id !== ownerId(env) || ownerId(env) === 0) {
       if (ctx.chat?.type === "private") await ctx.reply(T.notOwner).catch(() => undefined);
       return;

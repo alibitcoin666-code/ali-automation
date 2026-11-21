@@ -306,7 +306,7 @@ const Spectrum: React.FC<BgProps> = ({ theme, spectrum, energy = 0 }) => {
   const bw = width / n;
   const cx = width / 2;
   const cy = height / 2;
-  const R = Math.min(width, height) * 0.22 * (1 + energy * 0.08);
+  const R = Math.min(width, height) * 0.17 * (1 + energy * 0.05);
   return (
     <AbsoluteFill style={{ background: `radial-gradient(ellipse at 50% 50%, ${p.bgAlt} 0%, ${p.bg} 70%)` }}>
       <svg width={width} height={height} style={{ position: "absolute" }}>
@@ -317,12 +317,13 @@ const Spectrum: React.FC<BgProps> = ({ theme, spectrum, energy = 0 }) => {
           </linearGradient>
         </defs>
         {bins.map((v, i) => {
-          const h = Math.max(4, v * height * 0.32);
-          return <rect key={i} x={i * bw + bw * 0.18} y={height - h} width={bw * 0.64} height={h} rx={bw * 0.3} fill="url(#spec-g)" />;
+          // low skyline under the content; kept short so it never competes with subtitles
+          const h = Math.max(3, v * height * 0.1);
+          return <rect key={i} x={i * bw + bw * 0.18} y={height - h} width={bw * 0.64} height={h} rx={bw * 0.3} fill="url(#spec-g)" opacity={0.45} />;
         })}
         {bins.map((v, i) => {
           const a = (i / n) * Math.PI * 2 - Math.PI / 2;
-          const r2 = R + 10 + v * 150;
+          const r2 = R + 6 + v * v * 56;
           return (
             <line
               key={`r${i}`}
@@ -330,9 +331,9 @@ const Spectrum: React.FC<BgProps> = ({ theme, spectrum, energy = 0 }) => {
               y1={cy + Math.sin(a) * R}
               x2={cx + Math.cos(a) * r2}
               y2={cy + Math.sin(a) * r2}
-              stroke={p.primary}
-              strokeOpacity={0.55}
-              strokeWidth={4}
+              stroke={p.accent}
+              strokeOpacity={0.18 + 0.4 * v}
+              strokeWidth={Math.max(3, (Math.PI * 2 * R) / n * 0.45)}
               strokeLinecap="round"
             />
           );

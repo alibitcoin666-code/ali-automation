@@ -165,8 +165,8 @@ export const SpectrumBars: React.FC<{ w: number; h: number; bins: number[]; them
         </linearGradient>
       </defs>
       {all.map((v, i) => {
-        const bh = Math.max(4, v * h * 0.95);
-        return <rect key={i} x={i * bw + bw * 0.18} y={(h - bh) / 2} width={bw * 0.64} height={bh} rx={bw * 0.3} fill="url(#spg)" opacity={0.55 + 0.45 * v} />;
+        const bh = Math.max(4, Math.pow(v, 2.6) * h * 0.75);
+        return <rect key={i} x={i * bw + bw * 0.18} y={(h - bh) / 2} width={bw * 0.64} height={bh} rx={bw * 0.3} fill="url(#spg)" opacity={0.4 + 0.5 * v} />;
       })}
     </svg>
   );

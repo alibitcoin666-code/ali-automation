@@ -98,6 +98,8 @@ const VisualSlot: React.FC<SceneViewProps & { w: number; h: number }> = ({ ps, t
   const s = ps.scene;
   if (ps.imageSrc) return <ImageFrame src={ps.imageSrc} w={w} h={h} theme={theme} durationInFrames={durationInFrames} seed={s.id} />;
   if (s.pianoNotes || ((theme.id === "pianova" || theme.id === "onehandonedream") && s.icons.length === 0)) return <PianoVisual w={w} h={h} theme={theme} notes={s.pianoNotes} />;
+  // the spectrum background already draws the radial visualizer; add mirrored bars only on other backgrounds
+  if (style.audioReactive && style.background === "spectrum") return null;
   if (style.audioReactive && spectrum) return <SpectrumBars w={w} h={h * 0.8} bins={spectrum.slice(0, 32)} theme={theme} />;
   const icons = s.icons.length ? s.icons : ["star"];
   return (

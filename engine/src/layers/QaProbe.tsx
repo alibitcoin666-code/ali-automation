@@ -26,8 +26,14 @@ export const QaProbe: React.FC<{ enabled: boolean }> = ({ enabled }) => {
           }
           if (x1 > x0) box = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
         }
-        let op = 1;
-        for (let n: HTMLElement | null = el; n; n = n.parentElement) op *= Number(getComputedStyle(n).opacity || 1);
+        // effective visible opacity: ancestors × the most opaque glyph span (words fade individually)
+        const chain = (from: HTMLElement, stop: HTMLElement | null) => {
+          let o = 1;
+          for (let n: HTMLElement | null = from; n && n !== stop; n = n.parentElement) o *= Number(getComputedStyle(n).opacity || 1);
+          return o;
+        };
+        let op = chain(el, null);
+        if (spans.length) op *= Math.max(...spans.map((s) => chain(s, el)));
         return {
           layer: el.dataset.amfLayer,
           id: el.dataset.amfId,

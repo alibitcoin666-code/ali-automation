@@ -213,7 +213,8 @@ export const KineticText: React.FC<KineticTextProps> = (p) => {
         if (p.preset === "lineMaskRtl") {
           // reveal from the reading start: right edge for RTL
           lineStyle.clipPath = rtl ? `inset(-20% 0 -20% ${(1 - lr) * 100}%)` : `inset(-20% ${(1 - lr) * 100}% -20% 0)`;
-          lineStyle.transform = `translateX(${(rtl ? -1 : 1) * (1 - lr) * -30}px)`;
+          // slide toward the anchored edge from inside the zone, so the line never crosses title-safe
+          lineStyle.transform = `translateX(${(rtl ? -1 : 1) * (1 - lr) * 30}px)`;
         }
         return (
           <span key={li} style={lineStyle}>
@@ -260,8 +261,8 @@ export const KineticText: React.FC<KineticTextProps> = (p) => {
                   break;
                 case "echo": {
                   ws.opacity = interpolate(s, [0, 0.3], [0, 1], clamp);
-                  ws.transform = `translateX(${(rtl ? 1 : -1) * (1 - s) * 120}px)`;
-                  ws.textShadow = `${(rtl ? 1 : -1) * (1 - s) * 40}px 0 0 ${p.accent}55, ${(rtl ? 1 : -1) * (1 - s) * 80}px 0 0 ${p.accent}22`;
+                  ws.transform = `translateX(${(rtl ? -1 : 1) * (1 - s) * 120}px)`;
+                  ws.textShadow = `${(rtl ? -1 : 1) * (1 - s) * 40}px 0 0 ${p.accent}55, ${(rtl ? -1 : 1) * (1 - s) * 80}px 0 0 ${p.accent}22`;
                   break;
                 }
                 case "glitchIn": {

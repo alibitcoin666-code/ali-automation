@@ -1,0 +1,71 @@
+name: deploy
+# Deploys the Telegram bot + web panel Worker with the repo's existing CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID
+# (a "Workers Scripts: Edit" token is enough — no D1 / R2 / KV permissions needed).
+# Optional secrets: TELEGRAM_BOT_TOKEN (enables the bot + webhook), TELEGRAM_OWNER_ID.
+on:
+  push:
+    branches: [main]
+    paths: ["worker/**", "pipeline/src/core/**", "brands/**", "engine/src/**", "styles/src/**", "templates/src/**", ".github/workflows/deploy.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
+      BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      OWNER_ID: ${{ secrets.TELEGRAM_OWNER_ID }}
+      PUBLIC_URL: ${{ vars.AMF_PUBLIC_URL || 'https://ali-motion-factory.ali-bitcoin666.workers.dev' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: typecheck + tests
+        working-directory: worker
+        run: pnpm typecheck && pnpm test
+      - name: build panel
+        working-directory: worker
+        run: pnpm build:panel
+      - name: wrangler deploy
+        working-directory: worker
+        run: |
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || { echo "::error::CLOUDFLARE_API_TOKEN secret missing"; exit 1; }
+          npx wrangler deploy --var "PUBLIC_URL:$PUBLIC_URL" --var "GITHUB_REPO:$GITHUB_REPOSITORY" ${OWNER_ID:+--var "OWNER_ID:$OWNER_ID"}
+      - name: worker secrets (derived from CALLBACK_SECRET, never printed)
+        working-directory: worker
+        run: |
+          [ -n "$CALLBACK_SECRET" ] || { echo "::error::CALLBACK_SECRET secret missing"; exit 1; }
+          derive() { printf '%s' "$1" | openssl dgst -sha256 -hmac "$CALLBACK_SECRET" -r | cut -d' ' -f1; }
+          SESSION_SECRET=$(derive session); TG_WEBHOOK_SECRET=$(derive telegram-webhook)
+          echo "::add-mask::$SESSION_SECRET"; echo "::add-mask::$TG_WEBHOOK_SECRET"
+          jq -n --arg c "$CALLBACK_SECRET" --arg s "$SESSION_SECRET" --arg t "$TG_WEBHOOK_SECRET" --arg b "$BOT_TOKEN" \
+            '{CALLBACK_SECRET:$c, SESSION_SECRET:$s, TG_WEBHOOK_SECRET:$t} + (if $b != "" then {BOT_TOKEN:$b} else {} end)' > "$RUNNER_TEMP/secrets.json"
+          npx wrangler secret bulk "$RUNNER_TEMP/secrets.json"
+          rm -f "$RUNNER_TEMP/secrets.json"
+          echo "TG_WEBHOOK_SECRET=$TG_WEBHOOK_SECRET" >> "$GITHUB_ENV"
+      - name: Telegram webhook + commands (only when TELEGRAM_BOT_TOKEN is set)
+        run: |
+          if [ -z "$BOT_TOKEN" ]; then echo "::notice::TELEGRAM_BOT_TOKEN not set — bot disabled, panel + render queue still deploy"; exit 0; fi
+          api="https://api.telegram.org/bot$BOT_TOKEN"
+          curl -fsS -X POST "$api/setWebhook" -H 'content-type: application/json' \
+            -d "$(jq -n --arg u "$PUBLIC_URL/tg/webhook" --arg s "$TG_WEBHOOK_SECRET" '{url:$u, secret_token:$s, allowed_updates:["message","callback_query"], drop_pending_updates:true}')" | jq -c '{ok, description}'
+          curl -fsS -X POST "$api/setMyCommands" -H 'content-type: application/json' -d '{"commands":[
+            {"command":"new","description":"ساخت ویدیوی تازه"},{"command":"status","description":"وضعیت آخرین کار"},
+            {"command":"jobs","description":"فهرست کارها"},{"command":"cancel","description":"لغو کار جاری"},
+            {"command":"quota","description":"سهمیه‌ی امروز"},{"command":"templates","description":"قالب‌ها و سبک‌ها"},
+            {"command":"panel","description":"لینک ورود به پنل وب"}]}' | jq -c '{ok}'
+      - name: smoke test
+        run: |
+          for i in 1 2 3 4 5 6; do curl -fsS "$PUBLIC_URL/health" && break || sleep 5; done
+          echo; curl -fsS -o /dev/null -w "panel HTTP %{http_code}\n" "$PUBLIC_URL/panel/"

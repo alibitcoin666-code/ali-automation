@@ -7,6 +7,18 @@ import { consumeMagic, confirmPage, hasSession, sessionCookie, logout, COOKIE } 
 import { listJobs, getJob, events, todayCount } from "./db";
 import { onCallback, startJob, approve, reject, cancel, edit, THEMES, type CallbackPayload } from "./jobs";
 import { ownerId } from "./env";
+import { Store, storeStub, d1Shim, mediaShim } from "./store";
+import { rpc } from "./rpc";
+
+export { Store };
+
+/** Attaches the Durable-Object-backed DB / MEDIA views and the claimed owner id. */
+async function bindEnv(raw: Env): Promise<Env> {
+  const stub = storeStub(raw.STORE);
+  const env: Env = { ...raw, DB: d1Shim(stub), MEDIA: mediaShim(stub) };
+  if (!env.OWNER_ID) env.OWNER_ID = (await stub.getSetting("owner_id")) ?? "";
+  return env;
+}
 
 const json = (data: unknown, status = 200, headers: HeadersInit = {}) =>
   new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...headers } });
@@ -17,27 +29,39 @@ const SECURITY_HEADERS = {
   "x-frame-options": "DENY",
 };
 
-/** Streams an R2 object with HTTP Range support (needed for video seeking in the panel). */
+/**
+ * Streams a stored object with HTTP Range support (needed for video seeking in the panel).
+ * Small blobs come from the Durable Object; large media are proxied from their GitHub Release asset.
+ */
 async function serveObject(env: Env, req: Request, key: string): Promise<Response> {
-  const range = req.headers.get("range");
-  const obj = await env.MEDIA.get(key, range ? { range: req.headers } : undefined);
+  const obj = await env.MEDIA.get(key);
   if (!obj) return new Response("not found", { status: 404 });
   const h = new Headers(SECURITY_HEADERS);
-  obj.writeHttpMetadata(h);
-  h.set("etag", obj.httpEtag);
+  h.set("content-type", obj.ctype || guessType(key));
   h.set("accept-ranges", "bytes");
   h.set("cache-control", "private, max-age=3600");
-  if (!h.get("content-type")) h.set("content-type", guessType(key));
-  if (!("body" in obj) || !obj.body) return new Response(null, { status: 304, headers: h });
-  if (range && obj.range && "offset" in obj.range) {
-    const off = obj.range.offset ?? 0;
-    const len = obj.range.length ?? obj.size - off;
-    h.set("content-range", `bytes ${off}-${off + len - 1}/${obj.size}`);
-    h.set("content-length", String(len));
-    return new Response(obj.body, { status: 206, headers: h });
+  const range = req.headers.get("range");
+  if (obj.url) {
+    const up = await fetch(obj.url, { headers: range ? { range } : {}, redirect: "follow" });
+    for (const k of ["content-length", "content-range", "etag", "last-modified"]) {
+      const v = up.headers.get(k);
+      if (v) h.set(k, v);
+    }
+    return new Response(up.body, { status: up.status === 206 ? 206 : up.ok ? 200 : up.status, headers: h });
   }
-  h.set("content-length", String(obj.size));
-  return new Response(obj.body, { headers: h });
+  const data = new Uint8Array(obj.data ?? new ArrayBuffer(0));
+  const m = range && /^bytes=(\d*)-(\d*)$/.exec(range);
+  if (m && (m[1] || m[2])) {
+    const size = data.byteLength;
+    const startB = m[1] ? Number(m[1]) : Math.max(0, size - Number(m[2]));
+    const endB = m[1] && m[2] ? Math.min(size - 1, Number(m[2])) : size - 1;
+    if (startB >= size || startB > endB) return new Response(null, { status: 416, headers: { "content-range": `bytes */${size}` } });
+    h.set("content-range", `bytes ${startB}-${endB}/${size}`);
+    h.set("content-length", String(endB - startB + 1));
+    return new Response(data.slice(startB, endB + 1), { status: 206, headers: h });
+  }
+  h.set("content-length", String(data.byteLength));
+  return new Response(data, { headers: h });
 }
 
 const guessType = (k: string) =>
@@ -48,7 +72,7 @@ const guessType = (k: string) =>
 const JOB_ID = /^[0-9]{8}-[0-9a-z]{6}$/;
 
 async function api(env: Env, req: Request, url: URL): Promise<Response> {
-  if (url.pathname === "/api/health") return json({ ok: true, enabled: enabled(env) });
+  if (url.pathname === "/api/health") return json({ ok: true, enabled: enabled(env), bot: !!env.BOT_TOKEN, owner: ownerId(env) > 0 });
   if (!(await hasSession(env, req))) return json({ error: "unauthorized" }, 401);
   const parts = url.pathname.split("/").filter(Boolean); // ["api", ...]
   const m = req.method;
@@ -95,11 +119,14 @@ async function api(env: Env, req: Request, url: URL): Promise<Response> {
 }
 
 export default {
-  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(req: Request, rawEnv: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
     try {
+      if (url.pathname === "/health") return json({ ok: true, enabled: enabled(rawEnv), bot: !!rawEnv.BOT_TOKEN });
+      const env = await bindEnv(rawEnv);
       // Telegram webhook — verified with the secret_token header (setWebhook secret_token).
       if (url.pathname === "/tg/webhook" && req.method === "POST") {
+        if (!env.BOT_TOKEN || !env.TG_WEBHOOK_SECRET) return new Response("bot not configured", { status: 503 });
         if (!safeEqual(req.headers.get("x-telegram-bot-api-secret-token") ?? "", env.TG_WEBHOOK_SECRET)) return new Response("forbidden", { status: 403 });
         return await webhookCallback(makeBot(env), "cloudflare-mod")(req);
       }
@@ -112,6 +139,13 @@ export default {
         if (!JOB_ID.test(p.jobId)) return new Response("bad id", { status: 400 });
         ctx.waitUntil(onCallback(env, p).catch((e) => console.error("callback failed", p.jobId, (e as Error).message)));
         return json({ ok: true });
+      }
+      // Storage / queue / AI RPC for the Actions workflows — HMAC-signed, same scheme as /cb/github.
+      if (url.pathname === "/cb/rpc" && req.method === "POST") {
+        const body = await req.text();
+        if (!(await verifyCallback(env.CALLBACK_SECRET, req.headers.get("x-amf-timestamp"), req.headers.get("x-amf-signature"), body)))
+          return new Response("bad signature", { status: 401 });
+        return await rpc(env, JSON.parse(body));
       }
       // Magic-link login (GET shows a confirm button; only POST consumes the one-time token).
       if (url.pathname === "/auth") {
@@ -138,7 +172,8 @@ export default {
   },
 
   /** Daily housekeeping: expire sessions / magic tokens and old wizard drafts. */
-  async scheduled(_c: ScheduledController, env: Env): Promise<void> {
+  async scheduled(_c: ScheduledController, rawEnv: Env): Promise<void> {
+    const env = await bindEnv(rawEnv);
     const now = Date.now();
     await env.DB.batch([
       env.DB.prepare(`DELETE FROM magic WHERE expires_at < ?1`).bind(now),

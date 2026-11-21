@@ -62,6 +62,9 @@ const Page: React.FC<{ page: Caption; startFrame: number; theme: BrandTheme; for
           flexDirection: "column",
           justifyContent: "flex-end",
           alignItems: "center",
+          // inline glyph boxes overhang the line box slightly; keep them clear of the Shorts UI edge
+          paddingBottom: format === "shorts_9x16" ? 12 : 2,
+          boxSizing: "border-box",
           opacity: 0.55 + 0.45 * enter,
           // scale from the bottom edge so the entering page never leaves the subtitle zone
           transform: `scale(${0.97 + 0.03 * enter})`,

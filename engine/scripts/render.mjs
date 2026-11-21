@@ -82,3 +82,5 @@ if (stillsDir) {
 }
 probe?.end();
 fs.rmSync(pub, { recursive: true, force: true });
+// The webpack bundle is a temp dir (~90 MB) — remove it so repeated runs do not fill the disk.
+if (serveUrl.startsWith(os.tmpdir())) fs.rmSync(serveUrl, { recursive: true, force: true });

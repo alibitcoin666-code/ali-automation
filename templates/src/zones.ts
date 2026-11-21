@@ -31,7 +31,7 @@ export function getLayout(format: Format): Layout {
         body: { rect: { x: 192, y: 530, w: 1536, h: 150 }, layer: "typography" },
         sideText: { rect: { x: 1000, y: 190, w: 728, h: 490 }, layer: "typography" },
         visual: { rect: { x: 192, y: 190, w: 760, h: 490 }, layer: "visual" },
-        lowerThird: { rect: { x: 1048, y: 690, w: 680, h: 92 }, layer: "lowerThird" },
+        lowerThird: { rect: { x: 1048, y: 682, w: 680, h: 108 }, layer: "lowerThird" },
         subtitle: { rect: { x: 240, y: 800, w: 1440, h: 172 }, layer: "subtitle" },
         progress: { rect: { x: 0, y: 1068, w: 1920, h: 12 }, layer: "logo" },
       },

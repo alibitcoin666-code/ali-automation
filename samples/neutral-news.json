@@ -1,40 +1,146 @@
 {
-  "version": 1, "jobId": "neutral-news", "type": "NEWS", "channel": "neutral", "format": "landscape_16x9", "language": "fa-IR",
+  "version": 1,
+  "jobId": "neutral-news",
+  "type": "NEWS",
+  "channel": "neutral",
+  "format": "landscape_16x9",
+  "language": "fa-IR",
   "title": "گفتار هوش مصنوعی گوگل؛ سه نکته‌ی کلیدی",
-  "mainStyle": "broadcastNews", "accentStyles": ["dataViz", "minimalSwiss"],
+  "mainStyle": "broadcastNews",
+  "accentStyles": [
+    "dataViz",
+    "minimalSwiss"
+  ],
   "scenes": [
-    { "id": "s1", "sceneType": "headline", "style": "broadcastNews", "transitionIn": "slide",
+    {
+      "id": "s1",
+      "sceneType": "headline",
+      "style": "broadcastNews",
+      "transitionIn": "slide",
       "voiceText": "گوگل مدل‌های تازه‌ی تبدیل متن به گفتار جمینای را در دسترس توسعه‌دهندگان قرار داده است.",
-      "onScreenText": ["گفتار جمینای", "مدل‌های تازه"],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s2", "sceneType": "fact", "style": "broadcastNews", "transitionIn": "slide",
+      "onScreenText": [
+        "گفتار جمینای",
+        "مدل‌های تازه"
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s2",
+      "sceneType": "fact",
+      "style": "broadcastNews",
+      "transitionIn": "slide",
       "voiceText": "طبق مستندات رسمی گوگل، این سرویس سی صدای آماده دارد که می‌توان سبک گفتارشان را با زبان طبیعی تنظیم کرد.",
-      "onScreenText": ["۳۰ صدای آماده"], "emphasis": ["۳۰"],
-      "sources": [{ "label": "Google AI — Speech generation", "url": "https://ai.google.dev/gemini-api/docs/speech-generation" }],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s3", "sceneType": "fact", "style": "dataViz", "transitionIn": "slide",
+      "onScreenText": [
+        "۳۰ صدای آماده"
+      ],
+      "emphasis": [
+        "۳۰"
+      ],
+      "sources": [
+        {
+          "label": "Google AI — Speech generation",
+          "url": "https://ai.google.dev/gemini-api/docs/speech-generation"
+        }
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s3",
+      "sceneType": "fact",
+      "style": "dataViz",
+      "transitionIn": "slide",
       "voiceText": "خروجی صوتی این مدل‌ها، فایل تک‌کاناله با نرخ نمونه‌برداری بیست‌وچهار کیلوهرتز است.",
-      "onScreenText": ["۲۴ کیلوهرتز", "تک‌کاناله"], "emphasis": ["۲۴"],
-      "sources": [{ "label": "Google AI — Speech generation", "url": "https://ai.google.dev/gemini-api/docs/speech-generation" }],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s4", "sceneType": "fact", "style": "broadcastNews", "transitionIn": "slide",
+      "onScreenText": [
+        "۲۴ کیلوهرتز",
+        "تک‌کاناله"
+      ],
+      "emphasis": [
+        "۲۴"
+      ],
+      "sources": [
+        {
+          "label": "Google AI — Speech generation",
+          "url": "https://ai.google.dev/gemini-api/docs/speech-generation"
+        }
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s4",
+      "sceneType": "fact",
+      "style": "broadcastNews",
+      "transitionIn": "slide",
       "voiceText": "دسترسی به این مدل‌ها از طریق رابط برنامه‌نویسی جمینای است و سطح رایگان، محدودیت تعداد درخواست دارد.",
-      "onScreenText": ["سطح رایگان محدود"],
-      "sources": [{ "label": "Google AI — Rate limits", "url": "https://ai.google.dev/gemini-api/docs/rate-limits" }, { "label": "Google AI — Pricing", "url": "https://ai.google.dev/gemini-api/docs/pricing" }],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s5", "sceneType": "context", "style": "minimalSwiss", "transitionIn": "fade",
+      "onScreenText": [
+        "رایگان، با سقف"
+      ],
+      "sources": [
+        {
+          "label": "Google AI — Rate limits",
+          "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+        },
+        {
+          "label": "Google AI — Pricing",
+          "url": "https://ai.google.dev/gemini-api/docs/pricing"
+        }
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s5",
+      "sceneType": "context",
+      "style": "minimalSwiss",
+      "transitionIn": "fade",
       "voiceText": "این یعنی سازندگان محتوا می‌توانند گوینده‌ی فارسی طبیعی را مستقیم در برنامه‌های خود به کار ببرند.",
-      "onScreenText": ["برای سازندگان محتوا"],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } },
-    { "id": "s6", "sceneType": "whatNext", "style": "broadcastNews", "transitionIn": "slide",
+      "onScreenText": [
+        "برای سازندگان محتوا"
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    },
+    {
+      "id": "s6",
+      "sceneType": "whatNext",
+      "style": "broadcastNews",
+      "transitionIn": "slide",
       "voiceText": "پیش از استفاده، قیمت و محدودیت‌های به‌روز را در صفحه‌ی رسمی بررسی کنید. منابع در توضیحات ویدیو آمده است.",
-      "onScreenText": ["منابع در توضیحات"],
-      "visual": { "prompt": "", "source": "svg", "noTextInImage": true } }
+      "onScreenText": [
+        "منابع رسمی"
+      ],
+      "visual": {
+        "prompt": "",
+        "source": "svg",
+        "noTextInImage": true
+      }
+    }
   ],
   "youtube": {
     "title": "گفتار هوش مصنوعی جمینای؛ سه نکته‌ی کلیدی",
     "description": "سه نکته‌ی مستند درباره‌ی مدل‌های تبدیل متن به گفتار جمینای.",
-    "hashtags": ["#هوش_مصنوعی", "#جمینای", "#خبر_فناوری"]
+    "hashtags": [
+      "#هوش_مصنوعی",
+      "#جمینای",
+      "#خبر_فناوری"
+    ]
   },
   "factCheckConfirmed": true
 }

@@ -1,5 +1,6 @@
 name: render
-# Dispatched by the Worker (POST /actions/workflows/render.yml/dispatches). One job stage per run.
+# Started by dispatcher.yml (it claims the Worker's render queue). One job stage per run.
+# Job state: small JSON in the Worker's Durable Object, media + resumable state as Release assets (tag job-<id>).
 on:
   workflow_dispatch:
     inputs:
@@ -12,7 +13,7 @@ on:
         type: choice
         options: [script, preview, final]
 permissions:
-  contents: read
+  contents: write # create the job-<id> pre-release and upload its assets
 concurrency:
   group: job-${{ inputs.job_id }}
   cancel-in-progress: false
@@ -20,13 +21,10 @@ env:
   JOB: ${{ inputs.job_id }}
   STAGE: ${{ inputs.stage }}
   AMF_WORK: ${{ github.workspace }}/.work
-  R2: s3://${{ secrets.R2_BUCKET }}
-  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-  AWS_DEFAULT_REGION: auto
-  R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
-  CALLBACK_URL: ${{ secrets.CALLBACK_URL }}
+  AMF_PUBLIC_URL: ${{ vars.AMF_PUBLIC_URL || 'https://ali-motion-factory.ali-bitcoin666.workers.dev' }}
+  CALLBACK_URL: ${{ vars.AMF_PUBLIC_URL || 'https://ali-motion-factory.ali-bitcoin666.workers.dev' }}/cb/github
   CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
+  GH_TOKEN: ${{ github.token }}
   FACTORY_ENABLED: ${{ vars.FACTORY_ENABLED || 'true' }}
 defaults:
   run:
@@ -40,10 +38,8 @@ jobs:
         run: |
           [[ "$JOB" =~ ^[0-9]{8}-[0-9a-z]{6}$ ]] || { echo "::error::bad job id"; exit 1; }
       - uses: actions/checkout@v7
-      - name: download job from R2
-        run: |
-          mkdir -p "$AMF_WORK/jobs/$JOB"
-          aws s3 sync "$R2/jobs/$JOB/" "$AMF_WORK/jobs/$JOB/" --endpoint-url "$R2_ENDPOINT" --exclude "out/*" --exclude "render/*.mp4" --only-show-errors
+      - name: pull job state (Worker blobs + release state.tgz)
+        run: node scripts/job-sync.mjs pull "$AMF_WORK/jobs/$JOB"
       - name: guard (protected channels, kill switch)
         run: node scripts/guard-request.mjs "$AMF_WORK/jobs/$JOB"
       - run: node scripts/callback.mjs "$JOB" "$STAGE" running
@@ -76,7 +72,7 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fontconfig >/dev/null
           bash scripts/install-fonts.sh
           pnpm --filter @amf/engine exec remotion browser ensure
-      - name: script (Gemini → zod, one auto-repair)
+      - name: script (Gemini → zod, one auto-repair; Workers AI if no Gemini key)
         if: inputs.stage == 'script'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -84,9 +80,6 @@ jobs:
         run: npx tsx src/cli.ts script --id "$JOB" --request "$AMF_WORK/jobs/$JOB/request.json" --edits "$AMF_WORK/jobs/$JOB/edits.json" 2>&1 | tee "$RUNNER_TEMP/stage.log"
       - name: images (flux-1-schnell on Workers AI, no text)
         if: inputs.stage == 'preview'
-        env:
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_AI_TOKEN: ${{ secrets.CF_AI_TOKEN }}
         run: node scripts/flux-assets.mjs "$AMF_WORK/jobs/$JOB" || echo "::warning::image generation skipped — SVG visuals are used"
       - name: produce ${{ inputs.stage }}
         if: inputs.stage != 'script'
@@ -107,11 +100,9 @@ jobs:
           GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
         run: node scripts/drive-upload.mjs "$AMF_WORK/jobs/$JOB" >> "$GITHUB_ENV" || echo "::warning::Drive upload skipped"
-      - name: upload job to R2
+      - name: publish job (release assets + Worker links)
         if: always()
-        run: |
-          aws s3 sync "$AMF_WORK/jobs/$JOB/" "$R2/jobs/$JOB/" --endpoint-url "$R2_ENDPOINT" --only-show-errors \
-            --exclude "public/*" --exclude "render/*.mov" --exclude "render/*silent*" --exclude "qa/proof/*" --exclude "align/*.wav"
+        run: node scripts/job-sync.mjs push "$AMF_WORK/jobs/$JOB" "$STAGE"
       - name: callback ok
         if: success()
         run: node scripts/callback.mjs "$JOB" "$STAGE" ok "" "$AMF_WORK/jobs/$JOB/qa/report.json"

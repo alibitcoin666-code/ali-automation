@@ -69,12 +69,13 @@ export function collisionCheck(plan: RenderPlan, probeLog: string) {
     const vis = items.filter((i) => i.opacity > 0.06 && i.box.w > 2 && i.box.h > 2);
     const subs = vis.filter((i) => i.layer === "subtitle");
     const others = vis.filter((i) => i.layer !== "subtitle" && i.layer !== "endScreen");
+    // 1–2 word keywords echoing the narration are emphasis; a copied phrase (≥ 3 words) is duplication
     for (const s of subs) {
       subtitleRendered.set(frame, s.rendered ?? "");
       if (!inside(s.box, z.subtitle)) add(`sz${Math.floor(frame / 15)}`, `frame ${frame}: subtitle outside subtitle zone ${JSON.stringify(s.box)}`);
       for (const o of others) if (overlap(s.box, o.box, 2)) add(`so${o.layer}${o.id}`, `frame ${frame}: subtitle overlaps ${o.layer}${o.id ? ":" + o.id : ""}`);
       for (const o of others)
-        if (o.text && o.layer === "typography" && stripForCompare(o.text).length > 6 && stripForCompare(s.rendered ?? "").includes(stripForCompare(o.text)))
+        if (o.text && o.layer === "typography" && o.text.trim().split(/\s+/).length >= 3 && stripForCompare(o.text).length > 6 && stripForCompare(s.rendered ?? "").includes(stripForCompare(o.text)))
           add(`dup${o.text}`, `frame ${frame}: on-screen text duplicated in subtitle «${o.text}»`);
     }
     // logo vs typography / lower-third
@@ -87,7 +88,8 @@ export function collisionCheck(plan: RenderPlan, probeLog: string) {
     if (frame >= plan.introFrames && frame < outroStart) {
       for (const t of vis.filter((i) => ["typography", "lowerThird", "subtitle"].includes(i.layer))) {
         if (!inside(t.box, { x: 0, y: 0, w: z.W, h: z.H }, 1)) add(`off${t.layer}${t.id}${t.text}`, `frame ${frame}: ${t.layer} off-canvas «${t.text ?? ""}»`);
-        else if (!inside(t.box, z.safe, 8)) add(`safe${t.layer}${t.id}${t.text}`, `frame ${frame}: ${t.layer} outside title-safe «${t.text ?? ""}» ${JSON.stringify(t.box)}`);
+        // title-safe applies to settled, legible text; transitions may scale/move a fading layer briefly
+        else if (t.opacity >= 0.6 && !inside(t.box, z.safe, 8)) add(`safe${t.layer}${t.id}${t.text}`, `frame ${frame}: ${t.layer} outside title-safe «${t.text ?? ""}» ${JSON.stringify(t.box)}`);
         for (const u of z.ui) if (overlap(t.box, u, 2)) add(`ui${t.layer}${t.id}${t.text}`, `frame ${frame}: ${t.layer} under Shorts UI «${t.text ?? ""}»`);
       }
     }

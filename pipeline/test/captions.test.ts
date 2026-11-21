@@ -96,3 +96,19 @@ describe("Persian page segmentation", () => {
     expect(pages.some((p) => p.tokens.at(-1)!.text === "شماست.")).toBe(true);
   });
 });
+
+describe("breakLines orphan guard", () => {
+  it("does not leave a lone label word on the first line", async () => {
+    const { breakLines } = await import("../src/core/persian/linebreak");
+    const r = breakLines("دو: انگشت میانی روی نت می.".split(" "), 24, 2);
+    expect(r.lines[0]).not.toBe("دو:");
+    expect(r.fits).toBe(true);
+  });
+});
+
+describe("breakLines phrase start", () => {
+  it("keeps noun + adjective together and breaks before the preposition", async () => {
+    const { breakLines } = await import("../src/core/persian/linebreak");
+    expect(breakLines("دو: انگشت میانی روی نت می.".split(" "), 24, 2).lines).toEqual(["دو: انگشت میانی", "روی نت می."]);
+  });
+});

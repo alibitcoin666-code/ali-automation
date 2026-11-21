@@ -1,3 +1,4 @@
+import os from "node:os";
 // Usage: node scripts/stills.mjs out_dir comp:frame[,frame...] [comp:frame...] [--props file.json]
 import path from "node:path";
 import fs from "node:fs";
@@ -36,3 +37,5 @@ for (const a of args) {
     console.log("wrote", output);
   }
 }
+// Remove the temp webpack bundle (~90 MB).
+if (serveUrl.startsWith(os.tmpdir())) fs.rmSync(serveUrl, { recursive: true, force: true });

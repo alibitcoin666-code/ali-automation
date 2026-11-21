@@ -56,6 +56,7 @@ export const STATUS_FA: Record<string, string> = {
 export const T = {
   notOwner: "این ربات خصوصی است.",
   killSwitch: "کارخانه موقتاً خاموش است (FACTORY_ENABLED).",
+  ownerClaimed: "مالکیت ربات برای شما ثبت شد. از این به بعد فقط شما می‌توانید از آن استفاده کنید.",
   start:
     "سلام. اینجا «کارخانه‌ی موشن علی» است.\n\n" +
     "/new ساخت ویدیوی تازه\n/status وضعیت آخرین کار\n/jobs فهرست کارها\n/cancel لغو کار جاری\n/quota سهمیه‌ی امروز\n/templates قالب‌ها و سبک‌ها\n/panel ورود به پنل وب",

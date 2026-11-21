@@ -43,8 +43,9 @@ const WithSpectrum: React.FC<{ plan: RenderPlan; src: string }> = ({ plan, src }
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { audioData, dataOffsetInSeconds } = useWindowedAudioData({ src, frame, fps, windowInSeconds: 10 });
-  const spectrum = audioData ? visualizeAudio({ fps, frame, audioData, numberOfSamples: 64, optimizeFor: "speed", dataOffsetInSeconds }) : undefined;
-  const energy = spectrum ? spectrum.slice(0, 8).reduce((a, b) => a + b, 0) / 8 : undefined;
+  const raw = audioData ? visualizeAudio({ fps, frame, audioData, numberOfSamples: 256, optimizeFor: "speed", dataOffsetInSeconds }) : undefined;
+  const spectrum = raw ? toDisplaySpectrum(raw, 48) : undefined;
+  const energy = raw ? Math.min(1, dbScale(raw.slice(0, 6).reduce((a, b) => a + b, 0) / 6)) : undefined;
   return <VideoInner plan={plan} spectrum={spectrum} energy={energy} />;
 };
 
@@ -140,13 +141,41 @@ const ProgressBarAbs: React.FC<React.ComponentProps<typeof ProgressBar>> = (p) =
 };
 
 /**
- * Outgoing content fades out during the first ~60% of the transition into the next sequence,
+ * Outgoing content fades out during the first ~40% of the transition into the next sequence,
  * so text from two scenes never ghosts on top of each other mid-transition.
  */
 const ExitFade: React.FC<{ d: number; t: number; children: React.ReactNode }> = ({ d, t, children }) => {
   const frame = useCurrentFrame();
   if (t <= 0) return <>{children}</>;
   const a = d - t;
-  const opacity = interpolate(frame, [a, a + Math.max(2, Math.round(t * 0.6))], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const opacity = interpolate(frame, [a, a + Math.max(2, Math.round(t * 0.4))], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   return <AbsoluteFill style={{ opacity }}>{children}</AbsoluteFill>;
 };
+
+/** dB scaling as recommended by the visualizeAudio() docs; range tuned for a −14 LUFS master. */
+const dbScale = (v: number, minDb = -72, maxDb = -12) => Math.max(0, Math.min(1, (20 * Math.log10(Math.max(v, 1e-6)) - minDb) / (maxDb - minDb)));
+
+/**
+ * Linear FFT bins → `n` log-spaced bands (≈ 60 Hz … 16 kHz), dB-scaled, with a gentle
+ * high-frequency tilt so the whole bar chart moves, not just the bass end.
+ */
+function toDisplaySpectrum(lin: number[], n: number): number[] {
+  const N = lin.length; // covers 0 … Nyquist (24 kHz at 48 kHz)
+  const hz = (i: number) => (i / N) * 24000;
+  const lo = 60;
+  const hi = 16000;
+  const out: number[] = [];
+  for (let b = 0; b < n; b++) {
+    const f0 = lo * Math.pow(hi / lo, b / n);
+    const f1 = lo * Math.pow(hi / lo, (b + 1) / n);
+    let a = Math.floor((f0 / 24000) * N);
+    let z = Math.max(a + 1, Math.ceil((f1 / 24000) * N));
+    a = Math.min(a, N - 1);
+    z = Math.min(z, N);
+    let m = 0;
+    for (let i = a; i < z; i++) m = Math.max(m, lin[i]!);
+    const tilt = 1 + 0.9 * (Math.log(Math.max(hz(a), lo) / lo) / Math.log(hi / lo));
+    out.push(Math.min(1, dbScale(m * tilt)));
+  }
+  return out;
+}

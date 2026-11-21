@@ -1,14 +1,15 @@
 #!/usr/bin/env node
-// Scene images with flux-1-schnell on Workers AI (REST). Images never contain text; the engine adds all typography.
+// Scene images with flux-1-schnell on Workers AI — called through the Worker's AI binding (/cb/rpc op "flux"),
+// so the workflow needs no Cloudflare AI token. Images never contain text; the engine adds all typography.
 // Writes <jobDir>/assets/<sceneId>.jpg (1920×1080 or 1080×1920, cover-cropped). Skips scenes that already have an asset.
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import { rpc } from "./amf-rpc.mjs";
 
 const dir = process.argv[2];
-const { CF_ACCOUNT_ID: acct, CF_AI_TOKEN: token } = process.env;
-if (!acct || !token) {
-  console.error("[flux] CF_ACCOUNT_ID / CF_AI_TOKEN missing — skipped");
+if (!process.env.AMF_PUBLIC_URL || !process.env.CALLBACK_SECRET) {
+  console.error("[flux] AMF_PUBLIC_URL / CALLBACK_SECRET missing — skipped");
   process.exit(0);
 }
 const sb = JSON.parse(fs.readFileSync(path.join(dir, "storyboard.json"), "utf8"));
@@ -31,18 +32,14 @@ for (const s of sb.scenes) {
   const prompt = `${s.visual.prompt}. ${brandLook}. ${portrait ? "vertical composition, subject centered, empty lower third" : "wide cinematic composition, calm empty lower area"}. ${NEG}.`.slice(0, 2000);
   let ok = false;
   for (let attempt = 0; attempt < 3 && !ok; attempt++) {
-    const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acct}/ai/run/@cf/black-forest-labs/flux-1-schnell`, {
-      method: "POST",
-      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-      body: JSON.stringify({ prompt, steps: 8, seed: 1000 + attempt + Number(s.id.replace(/\D/g, "")) * 17 }),
-    });
-    if (!res.ok) {
-      console.error(`[flux] ${s.id} HTTP ${res.status}`);
+    let b64;
+    try {
+      b64 = (await rpc({ op: "flux", prompt, steps: 8, seed: 1000 + attempt + Number(s.id.replace(/\D/g, "")) * 17 })).image;
+    } catch (e) {
+      console.error(`[flux] ${s.id} ${e.message}`);
       await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
       continue;
     }
-    const j = await res.json();
-    const b64 = j?.result?.image;
     if (!b64) continue;
     const raw = out.replace(/\.jpg$/, ".raw.jpg");
     fs.writeFileSync(raw, Buffer.from(b64, "base64"));
